@@ -34,94 +34,108 @@ document.getElementById('btn-close-leader').addEventListener('click', () => {
 });
 
 /* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
-const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
-let connectedAddr = null;
+/* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
+const BASE_CHAIN_ID_HEX = '0x2105' // Base mainnet
+let connectedAddr = null
+let ethProvider = null
 
-async function connectFarcasterWallet() {
-  // 1) guard: only works inside Farcaster Mini App
-  const inMini = !!(window.sdk && window.sdk.wallet && typeof window.sdk.wallet.connect === 'function');
-  if (!inMini) {
-    alert('Connect works only inside the Farcaster Mini App (Warpcast). Open this URL in Warpcast to use the wallet.');
-    throw new Error('not-in-miniapp');
+async function getProvider() {
+  if (ethProvider) return ethProvider
+  if (!window.sdk || !window.sdk.wallet || typeof window.sdk.wallet.getEthereumProvider !== 'function') {
+    throw new Error('not-in-miniapp')
   }
+  ethProvider = await window.sdk.wallet.getEthereumProvider()
+  return ethProvider
+}
 
+async function ensureBaseChain(provider) {
   try {
-    // 2) request connection from the Farcaster wallet
-    const account = await window.sdk.wallet.connect(); // returns { address }
-    connectedAddr = account.address;
-
-    // 3) update UI
-    const pill = document.getElementById('addr-pill');
-    if (pill) {
-      pill.style.display = 'block';
-      pill.textContent = `connected: ${connectedAddr.slice(0, 6)}…${connectedAddr.slice(-4)}`;
+    const current = await provider.request({ method: 'eth_chainId' })
+    if (current !== BASE_CHAIN_ID_HEX) {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      })
     }
-    const btn = document.getElementById('btn-connect');
-    if (btn) {
-      btn.textContent = 'connected';
-      btn.classList.add('connected');
-      btn.disabled = true;
-    }
-
-    return connectedAddr;
-  } catch (err) {
-    console.error('Farcaster wallet connect failed:', err);
-    // surface a friendly reason if available
-    alert('Wallet connect failed or was cancelled.');
-    throw err;
+  } catch (e) {
+    // ignore, host may auto-pin to Base
   }
 }
 
+async function connectFarcasterWallet() {
+  try {
+    const provider = await getProvider()
+    // request account
+    const accounts = await provider.request({ method: 'eth_requestAccounts' })
+    connectedAddr = accounts?.[0] || null
+    await ensureBaseChain(provider)
+
+    // update UI
+    const pill = document.getElementById('addr-pill')
+    if (pill && connectedAddr) {
+      pill.style.display = 'block'
+      pill.textContent = `connected: ${connectedAddr.slice(0, 6)}…${connectedAddr.slice(-4)}`
+    }
+    const btn = document.getElementById('btn-connect')
+    if (btn) {
+      btn.textContent = 'connected'
+      btn.classList.add('connected')
+      btn.disabled = true
+    }
+    return connectedAddr
+  } catch (err) {
+    console.error('wallet connect failed', err)
+    alert('open this inside Farcaster to connect the wallet')
+    throw err
+  }
+}
 
 async function ensureConnected() {
-  if (connectedAddr) return connectedAddr;
-  return connectFarcasterWallet();
+  if (connectedAddr) return connectedAddr
+  return connectFarcasterWallet()
 }
 
 // mandatory entry transaction: send 0.00001 ETH to self on Base
 async function sendMandatoryTx() {
-  const addr = await ensureConnected();
+  const addr = await ensureConnected()
+  const provider = await getProvider()
   const tx = {
     from: addr,
-    to: addr,                             // self-transfer just to require an ETH send
-    value: '0x5af3107a4000',              // 0.00001 ETH in hex wei (1e14)
-    chainId: BASE_CHAIN_ID_HEX,           // be explicit
-  };
-  const hash = await window.ethereum.request({
+    to: addr,                     // self transfer
+    value: '0x5af3107a4000',      // 0.00001 ETH in hex wei (1e14)
+  }
+  // chain is ensured in connect step
+  const hash = await provider.request({
     method: 'eth_sendTransaction',
     params: [tx],
-  });
-  return hash;
+  })
+  return hash
 }
 
 /* buttons */
 document.getElementById('btn-connect')?.addEventListener('click', async () => {
-  try {
-    await connectFarcasterWallet();
-  } catch (e) {
-    // already handled by the function (alerts), keep console log for dev
-    console.debug(e);
-  }
-});
-
+  try { await connectFarcasterWallet() } catch {}
+})
 
 document.getElementById('btn-play')?.addEventListener('click', async (e) => {
-  const btn = e.currentTarget; btn.disabled = true;
+  const btn = e.currentTarget; btn.disabled = true
   try {
-    const hasWallet = !!window.ethereum && !!window.sdk;
-    if (hasWallet) {
-      await ensureConnected();
-      await sendMandatoryTx();  // required in the Mini App
-      startGame();
+    const inMini = !!(window.sdk && window.sdk.wallet)
+    if (inMini) {
+      await ensureConnected()
+      await sendMandatoryTx()
+      startGame()
     } else {
-      startGame();              // dev mode: start without tx
+      startGame() // dev mode outside Farcaster
     }
   } catch (err) {
-    console.error(err); alert('transaction required to start');
+    console.error(err)
+    alert('transaction required to start')
   } finally {
-    btn.disabled = false;
+    btn.disabled = false
   }
-});
+})
+
 
 
 

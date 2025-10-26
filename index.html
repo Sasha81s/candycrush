@@ -45,10 +45,12 @@
 
     <!-- scripts -->
     <script src="./app.js"></script>
-    <script type="module">
-      import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
-      window.sdk = sdk;   // expose for app.js usage
-      window.addEventListener('load', () => { try { sdk.actions.ready() } catch {} })
-    </script>
+<!-- scripts -->
+<script type="module">
+  import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
+  window.sdk = sdk
+  window.addEventListener('load', () => { try { sdk.actions.ready() } catch {} })
+</script>
+<script src="./app.js"></script>
   </body>
 </html>
