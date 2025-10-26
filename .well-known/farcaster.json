@@ -1,0 +1,10 @@
+{
+  "name": "CandyCrush Mini",
+  "iconUrl": "/img/icon.png",
+  "webUrl": "https://YOUR-DOMAIN/index.html",
+  "splash": {
+    "title": "CandyCrush",
+    "description": "match 3 in a mini app",
+    "backgroundColor": "#000000"
+  }
+}

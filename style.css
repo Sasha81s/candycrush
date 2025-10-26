@@ -92,6 +92,29 @@ border: none;
        right: 10px;
        padding: 10px;
        top: 6%;
+
+.box { position: relative; transition: transform 120ms ease; }
+.box.dragging { z-index: 2; }
+.box.preview  { z-index: 1; }
+
+       /* ensure the game fits inside the mini-app modal */
+#game-root, .board, canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* no native image drag, no selection, no scroll while sliding */
+html, body { overscroll-behavior: none; }
+.board, .box { touch-action: none; }
+.box, .box * {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.box { position: relative; transition: transform 120ms ease; }
+.box.dragging { z-index: 2; }
+.box.preview  { z-index: 1; }
+
 /* margin: 10px 0px; */
        color: white;
     }
@@ -112,6 +135,105 @@ border: none;
     color: rgb(255, 98, 124) !important; 
 
 }
+:root { --w: 424px; --h: 695px; --bg:#2d2630; --card:#3a3340; --text:#f2eef6; --accent:#8a5cff; }
+html, body { margin:0; padding:0; height:100%; background:#000; color:var(--text); font-family: system-ui, sans-serif; }
+#app { width:100%; max-width:var(--w); height:100vh; max-height:var(--h); margin:0 auto; position:relative; }
+
+.screen { position:absolute; inset:0; display:none; padding:20px; box-sizing:border-box; background:var(--bg); }
+.screen.active { display:block; }
+
+.title { text-align:center; margin:60px 0 24px; font-size:28px; }
+.btns { display:flex; flex-direction:column; gap:12px; max-width:260px; margin:0 auto; }
+.btn { appearance:none; border:0; padding:14px 16px; border-radius:12px; background:var(--card); color:var(--text); font-weight:600; cursor:pointer; }
+.btn.primary { background:var(--accent); color:#fff; }
+.btn.small { padding:8px 12px; border-radius:10px; }
+
+.hud { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+#game-root { display:flex; align-items:center; justify-content:center; height:calc(100% - 48px); }
+
+.board { display:grid; grid-template-columns:repeat(8, 50px); grid-template-rows:repeat(8, 50px); gap:6px; }
+.box { width:50px; height:50px; background-size:cover; transition:transform 120ms ease; }
+.box.dragging { z-index:2; }
+.box.preview { z-index:1; }
+
+.modal { position:absolute; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; }
+.modal.show { display:flex; }
+.modal-card { width:86%; max-width:360px; background:var(--card); border-radius:16px; padding:16px; }
+.list { margin:12px 0 16px; padding-left:20px; }
+
+:root {
+  --w: 424px;
+  --h: 695px;
+  --board: 392px;         /* will be updated by JS to fit */
+  --bg: #241f28;
+  --card: #2f2935;
+  --text: #f2eef6;
+  --accent: #8a5cff;
+}
+
+#app { width: 100%; max-width: var(--w); height: 100vh; max-height: var(--h); margin: 0 auto; background: var(--bg); }
+
+.hud {
+  position: sticky; top: 0; z-index: 2;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px; color: var(--text); font-weight: 600;
+}
+
+#game-root {
+  height: calc(100% - 48px);
+  display: grid; place-items: center;
+  padding: 12px 14px 18px;
+}
+
+.board {
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 6px;
+  background: var(--card);
+  padding: 10px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35) inset, 0 8px 24px rgba(0,0,0,.25);
+}
+
+.box {
+  aspect-ratio: 1 / 1;
+  width: 100%; height: 100%;
+  background-size: 88% auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 10px;         /* soft corners */
+  transition: transform 120ms ease;
+}
+
+.box.dragging { z-index: 2; }
+.box.preview  { z-index: 1; }
+
+/* prevent weird drags / text selection */
+.board, .box { touch-action: none; }
+.box, .box * { -webkit-user-drag: none; user-select: none; }
+
+/* smaller phones */
+@media (max-height: 640px) {
+  :root { --board: 352px; }
+}
+
+.addr-pill {
+  margin: 8px auto 0;
+  max-width: 260px;
+  text-align: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text);
+  word-break: break-all;
+}
+.btn[disabled] { opacity: .6; pointer-events: none; }
+
 i{
     font-size: 24px;
 }

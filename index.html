@@ -1,40 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>CandyCrush Mini</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+    </style>
+  </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candy Crush Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="style.css">
-</head>
-
-
-<body>
-    <div class="h">
-        <h5>Max 50 Score Needed To Win</h5>
-    <h5 >Timer: <span id="time">0</span></h5>
-    <h5 >Score: <span id="score">0</span></h5>
+  <body>
+    <div id="app">
+      <!-- HOME -->
+<div class="btns">
+  <button id="btn-connect" class="btn">connect wallet</button>
+  <button id="btn-play" class="btn primary">PLAY</button>
+  <button id="btn-leader" class="btn">LEADERBOARD</button>
 </div>
-<div class="h0">
-    <h5 title="Realod"> <i class="fa-solid fa-rotate-right" id="rel"  ></i></h5>
-    <h5><i class="fas fa-volume-mute" id="mut"></i></h5>
+<p id="addr-pill" class="addr-pill" style="display:none;"></p>
 
-</div>
-    <audio loop id="aud">
-        <source src="img/candy_crush_loop1.mp3"  type="audio/mpeg">
-    </audio>
-    <audio loop id="aud1">
-        <source src="img/candycrushcombo4.mp3"  type="audio/mpeg">
-    </audio>
-    <div class="board" id="board"></div>
-    <div class="board board1" id="board1">
-    <button onclick="ply()" class="str">start</button>
-</div>
-<script src="app.js"></script>
-</body>
 
+      <!-- GAME -->
+      <section id="screen-game" class="screen">
+        <header class="hud">
+          <div>score: <span id="score">0</span></div>
+          <div>time: <span id="time">60</span></div>
+          <button id="btn-exit" class="btn small">exit</button>
+        </header>
+        <div id="game-root">
+          <div id="board" class="board"></div>
+        </div>
+      </section>
+
+      <!-- LEADERBOARD MODAL -->
+      <div id="leader-modal" class="modal">
+        <div class="modal-card">
+          <h2>leaderboard</h2>
+          <ol id="leader-list" class="list"></ol>
+          <button id="btn-close-leader" class="btn primary">close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- scripts -->
+    <script src="./app.js"></script>
+    <script type="module">
+      import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
+      window.addEventListener('load', () => {
+        try { sdk.actions.ready() } catch {}
+      })
+    </script>
+  </body>
 </html>
