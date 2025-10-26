@@ -38,21 +38,19 @@ const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
 let connectedAddr = null;
 
 async function connectFarcasterWallet() {
+  // 1) guard: only works inside Farcaster Mini App
+  const inMini = !!(window.sdk && window.sdk.wallet && typeof window.sdk.wallet.connect === 'function');
+  if (!inMini) {
+    alert('Connect works only inside the Farcaster Mini App (Warpcast). Open this URL in Warpcast to use the wallet.');
+    throw new Error('not-in-miniapp');
+  }
+
   try {
-    // connect via mini-app sdk
-    const account = await window.sdk.wallet.connect();
+    // 2) request connection from the Farcaster wallet
+    const account = await window.sdk.wallet.connect(); // returns { address }
     connectedAddr = account.address;
 
-    // ensure Base chain
-    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-    if (chainId !== BASE_CHAIN_ID_HEX) {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      });
-    }
-
-    // UI
+    // 3) update UI
     const pill = document.getElementById('addr-pill');
     if (pill) {
       pill.style.display = 'block';
@@ -64,12 +62,16 @@ async function connectFarcasterWallet() {
       btn.classList.add('connected');
       btn.disabled = true;
     }
+
     return connectedAddr;
   } catch (err) {
-    console.error('connect failed', err);
+    console.error('Farcaster wallet connect failed:', err);
+    // surface a friendly reason if available
+    alert('Wallet connect failed or was cancelled.');
     throw err;
   }
 }
+
 
 async function ensureConnected() {
   if (connectedAddr) return connectedAddr;
@@ -94,8 +96,14 @@ async function sendMandatoryTx() {
 
 /* buttons */
 document.getElementById('btn-connect')?.addEventListener('click', async () => {
-  try { await connectFarcasterWallet(); } catch { alert('wallet connect failed'); }
+  try {
+    await connectFarcasterWallet();
+  } catch (e) {
+    // already handled by the function (alerts), keep console log for dev
+    console.debug(e);
+  }
 });
+
 
 document.getElementById('btn-play')?.addEventListener('click', async (e) => {
   const btn = e.currentTarget; btn.disabled = true;
