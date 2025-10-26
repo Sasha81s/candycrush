@@ -8,11 +8,21 @@ const modals = {
 };
 
 function showScreen(name) {
-  document.getElementById('screen-home')?.classList.remove('active');
-  document.getElementById('screen-game')?.classList.remove('active');
-  document.getElementById(name === 'home' ? 'screen-home' : 'screen-game')?.classList.add('active');
+  const home = document.getElementById('screen-home');
+  const game = document.getElementById('screen-game');
+
+  // hide both
+  home?.classList.remove('active');
+  game?.classList.remove('active');
+
+  // show the requested one
+  (name === 'game' ? game : home)?.classList.add('active');
+
+  // housekeeping
   if (name === 'home') stopTimer();
+  modals.leader?.classList.remove('show');
 }
+
 
 document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
 document.getElementById('btn-leader').addEventListener('click', () => {

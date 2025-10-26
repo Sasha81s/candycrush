@@ -24,8 +24,10 @@ html, body{
   box-shadow: 0 12px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.25);
 }
 
-/* each screen fills the panel */
-.screen{ position:absolute; inset:0; }
+/* show only the active screen */
+.screen { position: absolute; inset: 0; display: none; }
+.screen.active { display: block; }
+
 
 /* ---------- HOME ---------- */
 #screen-home{
