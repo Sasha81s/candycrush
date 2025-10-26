@@ -100,4 +100,50 @@ html, body{
     width:min(100vw, var(--w));
     height:min(100vh, var(--h));
   }
+  /* ---------- BOARD GRID ---------- */
+:root { --board: 392px; }
+
+.board{
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.box{
+  background: rgba(255,255,255,.08) center/cover no-repeat;
+  border-radius: 10px;
+  transition: transform .08s ease;
+  user-select: none;
+  touch-action: none;
+}
+
+.box.preview{ opacity:.85; }
+.box.dragging{ z-index:1; }
+
+/* ---------- MODAL ---------- */
+.modal{
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.55);
+  z-index: 10;
+}
+
+.modal.show{ display: flex; }
+
+.modal-card{
+  width: min(92%, 420px);
+  background: var(--card);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.35);
+}
+
+.list{ margin: 10px 0 16px; padding-left: 20px; }
 }
