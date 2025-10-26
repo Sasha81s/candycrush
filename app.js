@@ -1,17 +1,3 @@
-import { sdk } from '@farcaster/miniapp-sdk'
-import { createConfig, http, sendTransaction } from 'wagmi'
-import { base } from 'wagmi/chains'
-import { farcasterMiniApp } from '@farcaster/miniapp-wagmi-connector'
-import { parseEther } from 'viem'
-
-// wagmi config for Base + Farcaster connector
-const config = createConfig({
-  chains: [base],
-  transports: { [base.id]: http() },
-  connectors: [farcasterMiniApp()],
-  ssr: false,
-})
-
 /* ======================= UI state ======================= */
 const screens = {
   home: document.getElementById('screen-home'),
@@ -21,7 +7,13 @@ const modals = {
   leader: document.getElementById('leader-modal'),
 };
 
-document.getElementById('btn-play').addEventListener('click', startGame);
+function showScreen(name) {
+  document.getElementById('screen-home')?.classList.remove('active');
+  document.getElementById('screen-game')?.classList.remove('active');
+  document.getElementById(name === 'home' ? 'screen-home' : 'screen-game')?.classList.add('active');
+  if (name === 'home') stopTimer();
+}
+
 document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
 document.getElementById('btn-leader').addEventListener('click', () => {
   renderLeaderboard();
@@ -31,19 +23,26 @@ document.getElementById('btn-close-leader').addEventListener('click', () => {
   modals.leader.classList.remove('show');
 });
 
-function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
-  screens[name].classList.add('active');
-  if (name === 'home') stopTimer();
-}
-
-/* ========== farcaster mini-app connect + mandatory tx ========== */
+/* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
+const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
 let connectedAddr = null;
 
 async function connectFarcasterWallet() {
   try {
-    const account = await sdk.wallet.connect();  // mini-app wallet connect
+    // connect via mini-app sdk
+    const account = await window.sdk.wallet.connect();
     connectedAddr = account.address;
+
+    // ensure Base chain
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+    if (chainId !== BASE_CHAIN_ID_HEX) {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      });
+    }
+
+    // UI
     const pill = document.getElementById('addr-pill');
     if (pill) {
       pill.style.display = 'block';
@@ -52,6 +51,7 @@ async function connectFarcasterWallet() {
     const btn = document.getElementById('btn-connect');
     if (btn) {
       btn.textContent = 'connected';
+      btn.classList.add('connected');
       btn.disabled = true;
     }
     return connectedAddr;
@@ -61,40 +61,56 @@ async function connectFarcasterWallet() {
   }
 }
 
-async function sendMandatoryTx() {
-  if (!connectedAddr) throw new Error('not connected');
-
-  const hash = await sendTransaction(config, {
-    to: connectedAddr,
-    value: parseEther('0.00001'), // 0.00001 ETH
-    chainId: base.id,
-  });
-
-  return hash;
+async function ensureConnected() {
+  if (connectedAddr) return connectedAddr;
+  return connectFarcasterWallet();
 }
 
 // mandatory entry transaction: send 0.00001 ETH to self on Base
-async function sendEntryTx(addr) {
-  if (!addr) throw new Error('missing address');
-  // 0.00001 ETH = 1e14 wei = 0x5af3107a4000
-  const valueHex = '0x5af3107a4000';
+async function sendMandatoryTx() {
+  const addr = await ensureConnected();
   const tx = {
     from: addr,
-    to: addr,                 // self-transfer; shows an ETH send and costs gas
-    value: valueHex,
+    to: addr,                             // self-transfer just to require an ETH send
+    value: '0x5af3107a4000',              // 0.00001 ETH in hex wei (1e14)
+    chainId: BASE_CHAIN_ID_HEX,           // be explicit
   };
-  const hash = await window.ethereum.request({ method: 'eth_sendTransaction', params: [tx] });
-  return hash; // if this throws or user rejects, we won't start the game
+  const hash = await window.ethereum.request({
+    method: 'eth_sendTransaction',
+    params: [tx],
+  });
+  return hash;
 }
+
+/* buttons */
+document.getElementById('btn-connect')?.addEventListener('click', async () => {
+  try { await connectFarcasterWallet(); } catch { alert('wallet connect failed'); }
+});
+
+document.getElementById('btn-play')?.addEventListener('click', async (e) => {
+  const btn = e.currentTarget; btn.disabled = true;
+  try {
+    const hasWallet = !!window.ethereum && !!window.sdk;
+    if (hasWallet) {
+      await ensureConnected();
+      await sendMandatoryTx();  // required in the Mini App
+      startGame();
+    } else {
+      startGame();              // dev mode: start without tx
+    }
+  } catch (err) {
+    console.error(err); alert('transaction required to start');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+
 
 /* ======================= leaderboard ======================= */
 const KEY = 'cc_scores_v1';
-function loadScores() {
-  try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; }
-}
-function saveScores(arr) {
-  localStorage.setItem(KEY, JSON.stringify(arr.slice(0, 50)));
-}
+function loadScores() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
+function saveScores(arr) { localStorage.setItem(KEY, JSON.stringify(arr.slice(0, 50))); }
 function submitScore(name, score) {
   const list = loadScores();
   list.push({ name, score, ts: Date.now() });
@@ -112,37 +128,10 @@ function renderLeaderboard() {
   });
 }
 
-/* ======================= your existing game ======================= */
+/* ======================= game core ======================= */
 // remove native drag ghost
 document.addEventListener('dragstart', e => e.preventDefault());
 
-// buttons
-document.getElementById('btn-connect')?.addEventListener('click', async () => {
-  try {
-    await connectFarcasterWallet();
-  } catch (e) {
-    alert('Farcaster wallet connect failed');
-  }
-});
-
-document.getElementById('btn-play')?.addEventListener('click', async (e) => {
-  const btn = e.currentTarget;
-  btn.disabled = true;
-  try {
-    if (!connectedAddr) await connectFarcasterWallet();
-    // mandatory tx before starting
-    await sendMandatoryTx(); // waits until tx hash returned
-    startGame();
-  } catch (err) {
-    console.error(err);
-    alert('transaction required to start');
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-
-// game vars
 const W = 8;
 const TYPES = 6;
 let cells = [];
@@ -168,33 +157,25 @@ function startTimer() {
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
-// index helpers
-const id = (r, c) => r * W + c;
-const inBounds = (r, c) => r >= 0 && r < W && c >= 0 && c < W;
-const urlFor = t => t === 0 ? 'none' : `url("img/color (${t}).png")`;
-function renderCell(i) { cells[i].style.backgroundImage = urlFor(types[i]); }
-function renderAll() { for (let i = 0; i < cells.length; i++) renderCell(i); }
-function randomType() { return 1 + Math.floor(Math.random() * TYPES); }
-// size the square board to the available space
+// board sizing
 function fitBoard() {
   const wrap = document.getElementById('game-root');
   if (!wrap) return;
-  const pad = 28; // leave room around edges
+  const pad = 28;
   const size = Math.min(wrap.clientWidth, wrap.clientHeight) - pad * 2;
-  // clamp so tiles look crisp
   const clamped = Math.max(300, Math.min(408, size));
   document.documentElement.style.setProperty('--board', clamped + 'px');
 }
 window.addEventListener('resize', fitBoard);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) fitBoard(); });
 
-// call this whenever you enter the game screen, after building the board
-// if you used the startGame() from earlier, just add:
-function startGame() {
-  // ... your existing reset and buildBoard calls
-  fitBoard();
-  // ... startTimer etc
-}
+// helpers
+const id = (r, c) => r * W + c;
+const inBounds = (r, c) => r >= 0 && r < W && c >= 0 && c < W;
+const urlFor = t => t === 0 ? 'none' : `url("img/color (${t}).png")`;
+function renderCell(i) { cells[i].style.backgroundImage = urlFor(types[i]); }
+function renderAll() { for (let i = 0; i < cells.length; i++) renderCell(i); }
+function randomType() { return 1 + Math.floor(Math.random() * TYPES); }
 
 function createsLine(r, c, t) {
   // horizontal
@@ -315,7 +296,6 @@ function enableSlideSwap(root, onSwap) {
   let active = null, preview = null;
   const rc = t => (t?.dataset && Number.isFinite(+t.dataset.r) && Number.isFinite(+t.dataset.c))
     ? { r:+t.dataset.r, c:+t.dataset.c } : null;
-  const inB = (r,c)=>r>=0&&r<W&&c>=0&&c<W;
 
   function clearFx(){
     if(active?.el){ active.el.classList.remove('dragging'); active.el.style.transform=''; }
@@ -351,7 +331,7 @@ function enableSlideSwap(root, onSwap) {
     if(axis==='x') to.c += clamp>0 ? 1 : -1;
     else           to.r += clamp>0 ? 1 : -1;
 
-    const next = inB(to.r,to.c) ? root.querySelector(`.box[data-r="${to.r}"][data-c="${to.c}"]`) : null;
+    const next = root.querySelector(`.box[data-r="${to.r}"][data-c="${to.c}"]`);
     if(preview && preview!==next){ preview.classList.remove('preview'); preview.style.transform=''; preview=null; }
     if(next){ preview = next; preview.classList.add('preview'); preview.style.transform = `translate(${-x}px, ${-y}px)`; }
   }, { passive:true });
@@ -389,21 +369,19 @@ function startGame(){
 
   const board = document.getElementById('board');
   buildBoard(board);
+  fitBoard();
   showScreen('game');
   startTimer();
 }
 
 function endGame(){
   stopTimer();
-  // no prompt, just save as "guest"
   const name = localStorage.getItem('cc_name') || 'guest';
   submitScore(name, score);
   renderLeaderboard();
   showScreen('home');
-  // optionally open the leaderboard automatically
   document.getElementById('leader-modal')?.classList.add('show');
 }
-
 
 /* boot to home */
 showScreen('home');

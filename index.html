@@ -1,34 +1,27 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>CandyCrush Mini</title>
-    <link rel="stylesheet" href="./style.css">
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-        background: #000;
-      }
-    </style>
+    <link rel="stylesheet" href="./style.css" />
+    <style> html,body{margin:0;padding:0;height:100%;background:#000;} </style>
   </head>
-
   <body>
     <div id="app">
-      <!-- HOME -->
-<div class="btns">
-  <button id="btn-connect" class="btn">connect wallet</button>
-  <button id="btn-play" class="btn primary">PLAY</button>
-  <button id="btn-leader" class="btn">LEADERBOARD</button>
-</div>
-<p id="addr-pill" class="addr-pill" style="display:none;"></p>
+      <!-- ===== HOME (leave this exactly as-is) ===== -->
+      <section id="screen-home" class="screen active">
+        <header class="home-top">
+          <button id="btn-connect" class="btn connect">connect wallet</button>
+          <button id="btn-leader" class="btn">LEADERBOARD</button>
+        </header>
+        <div class="home-center">
+          <button id="btn-play" class="btn primary play-btn">PLAY</button>
+          <p id="addr-pill" class="addr-pill" style="display:none;"></p>
+        </div>
+      </section>
 
-
-      <!-- GAME -->
+      <!-- ===== GAME (don’t edit) ===== -->
       <section id="screen-game" class="screen">
         <header class="hud">
           <div>score: <span id="score">0</span></div>
@@ -40,7 +33,7 @@
         </div>
       </section>
 
-      <!-- LEADERBOARD MODAL -->
+      <!-- ===== LEADERBOARD MODAL (don’t edit) ===== -->
       <div id="leader-modal" class="modal">
         <div class="modal-card">
           <h2>leaderboard</h2>
@@ -54,9 +47,8 @@
     <script src="./app.js"></script>
     <script type="module">
       import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
-      window.addEventListener('load', () => {
-        try { sdk.actions.ready() } catch {}
-      })
+      window.sdk = sdk;   // expose for app.js usage
+      window.addEventListener('load', () => { try { sdk.actions.ready() } catch {} })
     </script>
   </body>
 </html>
