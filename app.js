@@ -193,9 +193,9 @@ function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } 
 function fitBoard() {
   const wrap = document.getElementById('game-root');
   if (!wrap) return;
-  const pad = 28;
+  const pad = 20;
   const size = Math.min(wrap.clientWidth, wrap.clientHeight) - pad * 2;
-  const clamped = Math.max(300, Math.min(408, size));
+  const clamped = Math.max(360, Math.min(512, size));
   document.documentElement.style.setProperty('--board', clamped + 'px');
 }
 window.addEventListener('resize', fitBoard);

@@ -101,7 +101,7 @@ html, body{
     height:min(100vh, var(--h));
   }
   /* ---------- BOARD GRID ---------- */
-:root { --board: 392px; }
+:root { --board: 480px; }
 
 .board{
   width: var(--board);
@@ -109,7 +109,7 @@ html, body{
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  gap: 6px;
+  gap: 8px;
 }
 
 .box{
