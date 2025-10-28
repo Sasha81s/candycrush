@@ -1,4 +1,4 @@
-// simple top list reader
+// super safe version: works even if Redis returns weird data
 const { Redis } = require('@upstash/redis');
 
 function getRedis(res) {
@@ -13,31 +13,42 @@ function getRedis(res) {
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
+
   const redis = getRedis(res);
   if (!redis) return;
 
   try {
-    const n = Math.max(1, Math.min(50, Number(req.query.n || 10)));
     const key = 'cc:global:scores';
 
-    // fetch the top n scores (highest first)
-    const rows = await redis.zrange(key, -n, -1, { withScores: true });
-    if (!Array.isArray(rows) || !rows.length) return res.json([]);
+    // try both formats (depends on Redis version)
+    let rows = [];
+    try {
+      rows = await redis.zrange(key, -10, -1, { withScores: true });
+    } catch {
+      rows = await redis.zrange(key, -10, -1);
+    }
 
-    // parse and sort descending
-    const mapped = rows.map(r => ({ ...JSON.parse(r.member), score: r.score }));
-    mapped.sort((a,b) => b.score - a.score);
+    if (!rows || !rows.length) {
+      return res.json([]);
+    }
+
+    // handle both object and array formats
+    const mapped = Array.isArray(rows[0])
+      ? rows.map(([member, score]) => ({ ...JSON.parse(member), score }))
+      : rows.map(r => ({ ...JSON.parse(r.member || r), score: r.score || 0 }));
+
+    mapped.sort((a, b) => b.score - a.score);
 
     const out = mapped.map((row, i) => ({
       rank: i + 1,
       name: row.name,
       score: row.score,
-      addr: row.addr
+      addr: row.addr || ''
     }));
 
     res.json(out);
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok:false, err:'server' });
+    console.error('TOP ERROR:', e);
+    res.status(500).json({ ok:false, err:e.message || 'server' });
   }
 };
