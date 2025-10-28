@@ -1,4 +1,3 @@
-// super safe version: works even if Redis returns weird data
 const { Redis } = require('@upstash/redis');
 
 function getRedis(res) {
@@ -19,23 +18,44 @@ module.exports = async function handler(req, res) {
 
   try {
     const key = 'cc:global:scores';
+    let rows;
 
-    // try both formats (depends on Redis version)
-    let rows = [];
     try {
       rows = await redis.zrange(key, -10, -1, { withScores: true });
     } catch {
       rows = await redis.zrange(key, -10, -1);
     }
 
-    if (!rows || !rows.length) {
-      return res.json([]);
-    }
+    if (!rows || !rows.length) return res.json([]);
 
-    // handle both object and array formats
-    const mapped = Array.isArray(rows[0])
-      ? rows.map(([member, score]) => ({ ...JSON.parse(member), score }))
-      : rows.map(r => ({ ...JSON.parse(r.member || r), score: r.score || 0 }));
+    // normalize each row safely
+    const mapped = rows.map((r) => {
+      let member, score;
+      if (Array.isArray(r)) {
+        member = r[0];
+        score = Number(r[1] || 0);
+      } else if (r.member !== undefined) {
+        member = r.member;
+        score = Number(r.score || 0);
+      } else {
+        member = r;
+        score = 0;
+      }
+
+      let data;
+      try {
+        // sometimes redis returns an object already, sometimes a string
+        data = typeof member === 'string' ? JSON.parse(member) : member;
+      } catch {
+        data = { name: 'unknown', addr: '', score };
+      }
+
+      return {
+        name: data.name || 'guest',
+        score: data.score || score,
+        addr: data.addr || '',
+      };
+    });
 
     mapped.sort((a, b) => b.score - a.score);
 
@@ -43,7 +63,7 @@ module.exports = async function handler(req, res) {
       rank: i + 1,
       name: row.name,
       score: row.score,
-      addr: row.addr || ''
+      addr: row.addr,
     }));
 
     res.json(out);
