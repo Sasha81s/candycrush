@@ -636,25 +636,38 @@ function showEndGamePopup(score) {
     startGame();  // Restart the game
   });
 
-  // Share button functionality
-  document.getElementById('share-btn').addEventListener('click', () => {
-    const shareText = `I just scored ${score} in the game! Play now: https://your-game-link.com`;
+// Share button functionality (sync-safe)
+const shareBtn = document.getElementById('share-btn');
+shareBtn.onclick = () => {
+  const shareText = `I just scored ${score} points in Candy Crush Mini!`;
+  const shareUrl = 'https://candycrush-liard.vercel.app';
 
-    // Check if the Web Share API is available
+  try {
+    // must be inside a direct click
     if (navigator.share) {
       navigator.share({
-        title: 'My Game Score',
+        title: 'Candy Crush Mini',
         text: shareText,
-        url: 'https://your-game-link.com',
-      }).catch(console.error);  // Handle any errors
+        url: shareUrl,
+      })
+      .then(() => console.log('shared successfully'))
+      .catch(err => {
+        console.warn('share failed', err);
+        alert('Sharing was canceled or blocked.');
+      });
     } else {
-      // Fallback for unsupported Web Share API: prompt the user to copy the text
-      const userInput = prompt('Copy this to share:', shareText);
-      if (userInput === null) {
-        console.error('User canceled the share prompt.');
-      }
+      // fallback: copy to clipboard
+      navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
+        alert('Copied share link to clipboard!');
+      }).catch(() => {
+        prompt('Copy this to share:', `${shareText} ${shareUrl}`);
+      });
     }
-  });
+  } catch (err) {
+    console.error('share error', err);
+    alert('Sharing not supported here. Link copied instead.');
+  }
+};
 }
 
 
