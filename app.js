@@ -667,10 +667,9 @@ function showEndGamePopup(score) {
       console.error('Transaction failed or canceled:', err);
       alert('Transaction failed or canceled. Please try again.');
     } finally {
-      // Transaction is either successful or failed, now we can re-enable the game controls
+      // Regardless of transaction success or failure, re-enable the game controls
       isTransactionPending = false;
       enableGameControls();
-      popup.style.display = 'none'; // Hide the popup after transaction confirmation
     }
   });
 }
@@ -719,6 +718,44 @@ async function waitForTransactionConfirmation(txHash) {
     checkTransaction();
   });
 }
+
+// Reactivate the sendMandatoryTx() function (for re-use)
+async function sendMandatoryTx() {
+  const addr = await ensureConnected();
+  const provider = await getProvider();
+
+  // Ensure Base network
+  try {
+    const chain = await provider.request({ method: 'eth_chainId' });
+    if (chain !== BASE_CHAIN_ID_HEX) {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      });
+    }
+  } catch (err) {
+    console.error('Error switching chain:', err);
+  }
+
+  const tx = {
+    from: addr,
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Your target address
+    value: '0x9184e72a000', // 0.00001 ETH in wei
+  };
+
+  try {
+    const hash = await provider.request({
+      method: 'eth_sendTransaction',
+      params: [tx],
+    });
+    console.log('Transaction sent with hash:', hash);
+    return hash;
+  } catch (err) {
+    console.error('Transaction failed:', err);
+    throw new Error('Transaction failed');
+  }
+}
+
 
 
 // Wait for the transaction to be confirmed
