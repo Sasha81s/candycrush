@@ -4,7 +4,7 @@ function getRedis(res) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
-    res.status(500).json({ ok:false, err:'missing Upstash env' });
+    res.status(500).json({ ok: false, err: 'missing Upstash env' });
     return null;
   }
   return new Redis({ url, token });
@@ -17,11 +17,11 @@ module.exports = async function handler(req, res) {
 
   try {
     const { name, score, addr, fid } = req.body || {};
-    if (typeof score !== 'number') return res.status(400).json({ ok:false, err:'bad body' });
+    if (typeof score !== 'number') return res.status(400).json({ ok: false, err: 'bad body' });
 
     // Validate incoming data
     if (!name || (!addr && !fid)) {
-      return res.status(400).json({ ok:false, err:'missing name or identity (addr/fid)' });
+      return res.status(400).json({ ok: false, err: 'missing name or identity (addr/fid)' });
     }
 
     const safeScore = Math.max(0, Math.min(999999, score | 0));
@@ -32,6 +32,9 @@ module.exports = async function handler(req, res) {
 
     // Use fid or addr as unique ID
     const uniqueId = safeFid ? `fid:${safeFid}` : (safeAddr || `anon:${safeName}`);
+
+    // Log for debugging
+    console.log(`[debug] uniqueId: ${uniqueId}, score: ${safeScore}`);
 
     // Get all existing scores to check for updates
     let existing = [];
@@ -67,8 +70,11 @@ module.exports = async function handler(req, res) {
         ts: Date.now()
       };
 
-      // Add or update the score in Redis
+      // Add or update the score in Redis (force overwrite)
       await redis.zadd(key, { score: safeScore, member: JSON.stringify(entry) });
+
+      // Log for debugging
+      console.log('[debug] Updated or added new entry:', entry);
     }
 
     // Trim to top 100
@@ -78,6 +84,6 @@ module.exports = async function handler(req, res) {
     res.json({ ok: true });
   } catch (e) {
     console.error('[ERROR] Failed to submit score:', e);
-    res.status(500).json({ ok:false, err:'server error' });
+    res.status(500).json({ ok: false, err: 'server error' });
   }
 };
