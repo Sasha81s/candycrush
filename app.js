@@ -652,7 +652,7 @@ function showEndGamePopup(score) {
 
   // Play Again button functionality (trigger transaction first)
   function playAgainListener() {
-    if (!isTransactionPending) return;  // Prevent further actions if transaction is in progress
+    if (isTransactionPending) return;  // Prevent further actions if transaction is in progress
 
     try {
       // Trigger the transaction
@@ -678,6 +678,89 @@ function showEndGamePopup(score) {
     }
   }
 }
+
+// Function to disable game controls during transaction
+function disableGameControls() {
+  const gameElements = document.querySelectorAll('.game-element');
+  gameElements.forEach(el => el.setAttribute('disabled', 'true'));
+  // Optionally, hide any other UI elements that shouldn't be interacted with during transaction
+}
+
+// Function to enable game controls after transaction confirmation
+function enableGameControls() {
+  const gameElements = document.querySelectorAll('.game-element');
+  gameElements.forEach(el => el.removeAttribute('disabled'));
+}
+
+// Wait for the transaction to be confirmed
+async function waitForTransactionConfirmation(txHash) {
+  const provider = await getProvider();
+
+  return new Promise((resolve, reject) => {
+    const checkTransaction = async () => {
+      try {
+        const receipt = await provider.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txHash],
+        });
+
+        if (receipt) {
+          if (receipt.blockNumber) {
+            // Transaction is confirmed
+            resolve(receipt);
+          } else {
+            // Transaction is still pending, retry after a short delay
+            setTimeout(checkTransaction, 2000); // Check every 2 seconds
+          }
+        } else {
+          reject('Transaction receipt not found');
+        }
+      } catch (err) {
+        reject('Error checking transaction receipt: ' + err.message);
+      }
+    };
+
+    checkTransaction();
+  });
+}
+
+// Reactivate the sendMandatoryTx() function (for re-use)
+async function sendMandatoryTx() {
+  const addr = await ensureConnected();
+  const provider = await getProvider();
+
+  // Ensure Base network
+  try {
+    const chain = await provider.request({ method: 'eth_chainId' });
+    if (chain !== BASE_CHAIN_ID_HEX) {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      });
+    }
+  } catch (err) {
+    console.error('Error switching chain:', err);
+  }
+
+  const tx = {
+    from: addr,
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Your target address
+    value: '0x9184e72a000', // 0.00001 ETH in wei
+  };
+
+  try {
+    const hash = await provider.request({
+      method: 'eth_sendTransaction',
+      params: [tx],
+    });
+    console.log('Transaction sent with hash:', hash);
+    return hash;
+  } catch (err) {
+    console.error('Transaction failed:', err);
+    throw new Error('Transaction failed');
+  }
+}
+
 
 // Function to disable game controls during transaction
 function disableGameControls() {
