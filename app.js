@@ -11,6 +11,38 @@ function showScreen(name) {
   const home = document.getElementById('screen-home');
   const game = document.getElementById('screen-game');
 
+  /* ===== remote leaderboard config ===== */
+const API_BASE = ""; // same origin
+
+/* ===== wallet-sign helper (Farcaster mini app) ===== */
+async function signScore(score) {
+  if (!window.sdk?.wallet?.getEthereumProvider) throw new Error("no-wallet");
+  const provider = await window.sdk.wallet.getEthereumProvider();
+  const [addr] = await provider.request({ method: "eth_requestAccounts" });
+  const ts = Date.now();
+  const message = `cc-score:${score}|ts:${ts}`;
+  const sig = await provider.request({ method: "personal_sign", params: [message, addr] });
+  return { addr, ts, sig };
+}
+
+/* ===== remote submit + fetch ===== */
+async function submitScoreRemote(name, score) {
+  const { addr, ts, sig } = await signScore(score);
+  const r = await fetch(`${API_BASE}/api/score`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ addr, name, score, ts, sig })
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.err || "submit failed");
+}
+
+async function fetchTop(n = 10) {
+  const r = await fetch(`${API_BASE}/api/top?n=${n}`, { cache: "no-store" });
+  if (!r.ok) throw new Error("bad fetch");
+  return r.json();
+}
+
   // always hide modal
   modals.leader?.classList.remove('show');
   modals.leader?.setAttribute('hidden', '');
@@ -200,16 +232,27 @@ function submitScore(name, score) {
   list.sort((a,b) => b.score - a.score || a.ts - b.ts);
   saveScores(list);
 }
-function renderLeaderboard() {
-  const top = loadScores().slice(0, 10);
-  const ol = document.getElementById('leader-list');
-  ol.innerHTML = '';
-  top.forEach((row, i) => {
-    const li = document.createElement('li');
-    li.textContent = `${i+1}. ${row.name || 'guest'}  —  ${row.score}`;
+async function renderLeaderboard() {
+  const ol = document.getElementById("leader-list");
+  if (!ol) return;
+  ol.innerHTML = "";
+
+  let rows;
+  try {
+    rows = await fetchTop(10);
+  } catch {
+    // fallback to your local scores if remote fails
+    rows = loadScores().slice(0,10).map((r,i)=>({ rank:i+1, name:r.name, score:r.score, addr:null }));
+  }
+
+  rows.forEach((row, i) => {
+    const li = document.createElement("li");
+    const short = row.addr ? `${row.addr.slice(0,6)}…${row.addr.slice(-4)}` : "";
+    li.textContent = `${i+1}. ${row.name || "guest"}  -  ${row.score}${short ? "  ("+short+")" : ""}`;
     ol.appendChild(li);
   });
 }
+
 
 /* ======================= game core ======================= */
 document.addEventListener('dragstart', e => e.preventDefault());
@@ -502,14 +545,29 @@ function startGame() {
   });
 }
 
-function endGame(){
+async function endGame(){
   stopTimer();
-  const name = localStorage.getItem('cc_name') || 'guest';
-  submitScore(name, score);
-  renderLeaderboard();
-  showScreen('home');
-  document.getElementById('leader-modal')?.classList.add('show');
+  const name = localStorage.getItem("cc_name") || "guest";
+
+  try {
+    if (window.sdk?.wallet?.getEthereumProvider) {
+      await submitScoreRemote(name, score); // signed submit when inside Farcaster
+    } else {
+      // dev browser fallback so it still shows something
+      const list = loadScores();
+      list.push({ name, score, ts: Date.now() });
+      list.sort((a,b) => b.score - a.score || a.ts - b.ts);
+      saveScores(list);
+    }
+  } catch (e) {
+    console.error("[score] submit failed", e);
+  }
+
+  await renderLeaderboard();
+  showScreen("home");
+  document.getElementById("leader-modal")?.classList.add("show");
 }
+
 
 /* boot to home */
 showScreen('home');
