@@ -628,7 +628,7 @@ function showEndGamePopup(score) {
 
   // Show the popup modal
   const popup = document.getElementById('end-game-popup');
-  popup.style.display = 'flex';
+  popup.style.display = 'flex';  // Ensure it's visible
 
   // Play Again button functionality
   document.getElementById('play-again-btn').addEventListener('click', () => {
@@ -651,6 +651,7 @@ function showEndGamePopup(score) {
     }
   });
 }
+
 
 
 
