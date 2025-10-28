@@ -1,15 +1,28 @@
 {
-  "name": "CandyCrush Mini",
-  "iconUrl": "/img/icon.png",
-  "webUrl": "https://candycrush-liard.vercel.app",
-  "splash": {
-    "title": "CandyCrush",
-    "description": "match 3 in a mini app",
-    "backgroundColor": "#000000"
-  },
   "accountAssociation": {
     "header": "eyJmaWQiOjE0MTYwOTEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhCRGRmYjZhMTBENDdiOUU2OTk0NEE5Mzc3RjQyZDY1NzZBRDQ5YUE1In0",
     "payload": "eyJkb21haW4iOiJjYW5keWNydXNoLWxpYXJkLnZlcmNlbC5hcHAifQ",
     "signature": "Bc6gzjvCHbb41FQ+/OUwzh05Jy+SOQemqcEMXB6xHt19bOnmniBAffFzez1mdiRYIrpWqmlwx+73XLr1aNgsKBs="
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "CandyCrush",
+    "subtitle": "Match 3 Mini Game",
+    "description": "Match 3 puzzle game inside Farcaster Mini App",
+    "homeUrl": "https://candycrush-liard.vercel.app",
+    "webhookUrl": "https://candycrush-liard.vercel.app/api/webhook",
+    "primaryCategory": "games",
+    "tags": ["games", "puzzle", "base"],
+    "iconUrl": "https://candycrush-liard.vercel.app/icon.png",
+    "heroImageUrl": "https://candycrush-liard.vercel.app/og.png",
+    "splashImageUrl": "https://candycrush-liard.vercel.app/og.png",
+    "splashBackgroundColor": "#000000",
+    "screenshotUrls": ["https://candycrush-liard.vercel.app/screenshot-portrait.png"],
+    "ogTitle": "CandyCrush",
+    "ogDescription": "Play CandyCrush on Base",
+    "ogImageUrl": "https://candycrush-liard.vercel.app/og.png"
+  },
+  "baseBuilder": {
+    "ownerAddress": "0xsdqsqfsqsf"
   }
 }
