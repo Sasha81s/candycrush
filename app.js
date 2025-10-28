@@ -243,32 +243,21 @@ async function renderLeaderboard() {
   ol.innerHTML = 'loading…';
 
   try {
-    // Fetch all users' scores by their unique ID (from 'user:{uniqueId}')
-    const leaderboard = [];
-    const keys = await redis.keys('user:*'); // Get all user keys
-
-    for (const key of keys) {
-      const scoreData = await redis.hgetall(key);  // Fetch data for each user
-      if (scoreData) {
-        leaderboard.push({
-          name: scoreData.name,
-          score: scoreData.score,
-          addr: scoreData.addr,
-        });
-      }
-    }
-
-    // Sort the leaderboard by score in descending order
-    leaderboard.sort((a, b) => b.score - a.score);
+    const r = await fetch('/api/top');
+    const data = await r.json();
 
     ol.innerHTML = '';
-    leaderboard.forEach((row, i) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      ol.innerHTML = '<li>no scores yet</li>';
+      return;
+    }
+
+    data.forEach((row, i) => {
       const li = document.createElement('li');
-      const short =
-        row.addr && row.addr.length > 10
-          ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}`
-          : '';
-      li.textContent = `${i + 1}. ${row.name || 'guest'}  —  ${row.score}${short ? '  (' + short + ')' : ''}`;
+      const short = row.addr
+        ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}`
+        : '';
+      li.textContent = `${i + 1}. ${row.name} — ${row.score}${short ? ' (' + short + ')' : ''}`;
       ol.appendChild(li);
     });
   } catch (err) {
@@ -276,6 +265,7 @@ async function renderLeaderboard() {
     ol.innerHTML = '<li>error loading leaderboard</li>';
   }
 }
+
 
 
 
