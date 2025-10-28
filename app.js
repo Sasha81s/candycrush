@@ -644,40 +644,62 @@ async function endGame() {
 
 
 
-  // Play Again button functionality (trigger transaction first)
-  function playAgainListener() {
-    if (isTransactionPending) return;  // Prevent further actions if transaction is in progress
+ // Track if the transaction is pending
+let isTransactionPending = false;
 
-    // Mark transaction as pending
+function showEndGamePopup(score) {
+  // Display the score in the popup
+  document.getElementById('final-score').textContent = score;
+
+  // Show the popup modal
+  const popup = document.getElementById('end-game-popup');
+  popup.style.display = 'flex';  // Ensure it's visible
+
+  // Disable the Play Again button until transaction is confirmed
+  const playAgainButton = document.getElementById('play-again-btn');
+  playAgainButton.disabled = false;  // Ensure the button is clickable
+  playAgainButton.innerHTML = "Play Again"; // Reset the button text
+
+  // Reset event listener to prevent stacking event listeners
+  playAgainButton.removeEventListener('click', playAgainListener); 
+  playAgainButton.addEventListener('click', playAgainListener);  
+
+  function playAgainListener() {
+    // Prevent further actions if transaction is already pending
+    if (isTransactionPending) return;
+
+    // Mark the transaction as pending
     isTransactionPending = true;
 
+    // Disable the button to prevent multiple clicks
+    playAgainButton.disabled = true;
+    playAgainButton.innerHTML = "Processing..."; // Show processing text
+
+    // Trigger transaction
     sendMandatoryTx()
-      .then((txHash) => waitForTransactionConfirmation(txHash))
-      .then((receipt) => {
+      .then(txHash => {
+        // Wait for the transaction to be confirmed
+        return waitForTransactionConfirmation(txHash);
+      })
+      .then(receipt => {
         if (receipt.status === '0x1') {
+          console.log('Transaction confirmed. Restarting the game.');
           startGame(); // Restart game after successful transaction
         } else {
           throw new Error('Transaction failed');
         }
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('Transaction failed:', err);
         alert('Transaction failed. Please try again.');
       })
       .finally(() => {
+        // Regardless of the transaction result, enable the button again
         isTransactionPending = false;
-        enableGameControls();
+        playAgainButton.disabled = false;
+        playAgainButton.innerHTML = "Play Again";  // Reset text to default
       });
   }
-
-function disableGameControls() {
-  const gameElements = document.querySelectorAll('.game-element');
-  gameElements.forEach(el => el.setAttribute('disabled', 'true'));
-}
-
-function enableGameControls() {
-  const gameElements = document.querySelectorAll('.game-element');
-  gameElements.forEach(el => el.removeAttribute('disabled'));
 }
 
 // Wait for the transaction to be confirmed
@@ -691,10 +713,15 @@ async function waitForTransactionConfirmation(txHash) {
           params: [txHash],
         });
 
-        if (receipt && receipt.blockNumber) {
-          resolve(receipt);
+        if (receipt) {
+          if (receipt.blockNumber) {
+            resolve(receipt); // Transaction confirmed
+          } else {
+            // Still pending, check again in 2 seconds
+            setTimeout(checkTransaction, 2000);
+          }
         } else {
-          setTimeout(checkTransaction, 2000); // Check every 2 seconds
+          reject('Transaction receipt not found');
         }
       } catch (err) {
         reject('Error checking transaction receipt: ' + err.message);
@@ -703,6 +730,33 @@ async function waitForTransactionConfirmation(txHash) {
     checkTransaction();
   });
 }
+
+// Transaction function
+async function sendMandatoryTx() {
+  const addr = await ensureConnected();
+  const provider = await getProvider();
+
+  const tx = {
+    from: addr,
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Target address
+    value: '0x9184e72a000', // 0.00001 ETH in wei
+  };
+
+  try {
+    const hash = await provider.request({
+      method: 'eth_sendTransaction',
+      params: [tx],
+    });
+    console.log("Transaction hash:", hash);
+    return hash;
+  } catch (err) {
+    console.error("Transaction failed:", err);
+    throw new Error("Transaction failed");
+  }
+}
+
+
+
 
 
 
