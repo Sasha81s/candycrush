@@ -1,4 +1,4 @@
-window.onload = () => {
+window.addEventListener('DOMContentLoaded', () => {
   // ======================= UI state =======================
   const screens = {
     home: document.getElementById('screen-home'),
@@ -28,7 +28,7 @@ window.onload = () => {
     if (name === 'home') stopTimer();
   }
 
-  // ========== Farcaster Wallet Connect ==========
+  // ======================= Farcaster Wallet Connect ==========
 
   const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
   let connectedAddr = null;
@@ -116,6 +116,7 @@ window.onload = () => {
   const btnPlay = document.getElementById('btn-play');
   if (btnPlay) {
     btnPlay.addEventListener('click', async (e) => {
+      console.log('Play button clicked');
       const btn = e.currentTarget;
       if (!btn) return;
       btn.disabled = true;
@@ -139,9 +140,22 @@ window.onload = () => {
         btn.disabled = false;
       }
     });
+  } else {
+    console.error("Play button not found!");
   }
 
   // ======================= Leaderboard Logic =======================
+  const btnLeaderboard = document.getElementById('btn-leader');
+  if (btnLeaderboard) {
+    btnLeaderboard.addEventListener('click', async () => {
+      console.log('Leaderboard button clicked');
+      await renderLeaderboard();
+      modals.leader?.classList.add('show');
+    });
+  } else {
+    console.error("Leaderboard button not found!");
+  }
+
   async function renderLeaderboard() {
     const ol = document.getElementById('leader-list');
     if (!ol) return;
@@ -194,4 +208,4 @@ window.onload = () => {
 
   // Safety: ensure Farcaster SDK is ready
   setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);
-};
+});
