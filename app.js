@@ -685,6 +685,9 @@ function showEndGamePopup(score) {
         if (receipt.status === '0x1') {
           console.log('Transaction confirmed. Restarting the game.');
           startGame(); // Restart game after successful transaction
+          
+          // Hide the popup after the game starts
+          popup.style.display = 'none'; // Hide the popup after confirmation
         } else {
           throw new Error('Transaction failed');
         }
@@ -754,6 +757,7 @@ async function sendMandatoryTx() {
     throw new Error("Transaction failed");
   }
 }
+
 
 
 
