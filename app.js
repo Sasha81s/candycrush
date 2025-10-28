@@ -11,6 +11,9 @@ function showScreen(name) {
   const home = document.getElementById('screen-home');
   const game = document.getElementById('screen-game');
 
+  modals.leader?.classList.remove('show');
+modals.leader?.setAttribute('hidden', '');
+
   // hide both
   home?.classList.remove('active');
   game?.classList.remove('active');
@@ -20,18 +23,21 @@ function showScreen(name) {
 
   // housekeeping
   if (name === 'home') stopTimer();
-  modals.leader?.classList.remove('show');
 }
 
 
 document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
 document.getElementById('btn-leader').addEventListener('click', () => {
   renderLeaderboard();
+  modals.leader.removeAttribute('hidden');
   modals.leader.classList.add('show');
 });
+
 document.getElementById('btn-close-leader').addEventListener('click', () => {
   modals.leader.classList.remove('show');
+  modals.leader.setAttribute('hidden', '');
 });
+
 
 /* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
 /* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */

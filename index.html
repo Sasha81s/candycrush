@@ -25,7 +25,13 @@
   <p id="addr-pill" class="addr-pill" style="display:none;"></p>
 </div>
 
-
+<div id="leader-modal" class="modal" hidden>
+  <div class="modal-card">
+    <h2>leaderboard</h2>
+    <ol id="leader-list" class="list"></ol>
+    <button id="btn-close-leader" class="btn primary">close</button>
+  </div>
+</div>
       <!-- ===== GAME (don’t edit) ===== -->
       <section id="screen-game" class="screen">
         <header class="hud">
@@ -38,15 +44,14 @@
         </div>
       </section>
 
-      <!-- ===== LEADERBOARD MODAL (don’t edit) ===== -->
-      <div id="leader-modal" class="modal">
-        <div class="modal-card">
-          <h2>leaderboard</h2>
-          <ol id="leader-list" class="list"></ol>
-          <button id="btn-close-leader" class="btn primary">close</button>
-        </div>
-      </div>
-    </div>
+<!-- ===== LEADERBOARD MODAL ===== -->
+<div id="leader-modal" class="modal" hidden>
+  <div class="modal-card">
+    <h2>leaderboard</h2>
+    <ol id="leader-list" class="list"></ol>
+    <button id="btn-close-leader" class="btn primary">close</button>
+  </div>
+</div>
 
 <!-- scripts -->
 <script type="module">

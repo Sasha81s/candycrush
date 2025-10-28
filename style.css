@@ -113,12 +113,14 @@ html, body{
 .board{ width: 392px; height: 392px; } /* your app.js sets this dynamically; safe fallback */
 
 /* ---------- responsive scaling ---------- */
-@media (max-width: 460px), (max-height: 740px) {
+
+  @media (max-width: 460px), (max-height: 740px) {
   #app{
     width:min(100vw, var(--w));
     height:min(100vh, var(--h));
   }
-  /* ---------- BOARD GRID ---------- */
+}
+/* ---------- BOARD GRID ---------- */
 :root { --board: 480px; }
 
 .board{
@@ -137,7 +139,6 @@ html, body{
   user-select: none;
   touch-action: none;
 }
-
 .box.preview{ opacity:.85; }
 .box.dragging{ z-index:1; }
 
@@ -151,8 +152,8 @@ html, body{
   background: rgba(0,0,0,.55);
   z-index: 10;
 }
-
-.modal.show{ display: flex; }
+.modal.show{ display: flex !important; }
+.modal[hidden]{ display: none !important; }
 
 .modal-card{
   width: min(92%, 420px);
@@ -164,4 +165,3 @@ html, body{
 }
 
 .list{ margin: 10px 0 16px; padding-left: 20px; }
-}
