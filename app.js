@@ -406,11 +406,18 @@ function startGame(){
   if (timeEl) timeEl.textContent = '60';
 
   const board = document.getElementById('board');
-  buildBoard(board);
-  fitBoard();
+
+  // 1) show the game screen first so layout exists
   showScreen('game');
-  startTimer();
+
+  // 2) then build and size on the next frame
+  requestAnimationFrame(() => {
+    buildBoard(board);
+    fitBoard();
+    startTimer();
+  });
 }
+
 
 function endGame(){
   stopTimer();
@@ -426,4 +433,3 @@ showScreen('home');
 
 // safety: if we’re inside a Mini App and ready wasn’t called yet, call it now
 setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0)
-setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);
