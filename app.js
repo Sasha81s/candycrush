@@ -232,26 +232,39 @@ function submitScore(name, score) {
   list.sort((a,b) => b.score - a.score || a.ts - b.ts);
   saveScores(list);
 }
+
 async function renderLeaderboard() {
-  const ol = document.getElementById("leader-list");
+  const ol = document.getElementById('leader-list');
   if (!ol) return;
-  ol.innerHTML = "";
+  ol.innerHTML = 'loading…';
 
-  let rows;
   try {
-    rows = await fetchTop(10);
-  } catch {
-    // fallback to your local scores if remote fails
-    rows = loadScores().slice(0,10).map((r,i)=>({ rank:i+1, name:r.name, score:r.score, addr:null }));
-  }
+    const r = await fetch('https://candycrush-liard.vercel.app/api/top');
+    const data = await r.json();
 
-  rows.forEach((row, i) => {
-    const li = document.createElement("li");
-    const short = row.addr ? `${row.addr.slice(0,6)}…${row.addr.slice(-4)}` : "";
-    li.textContent = `${i+1}. ${row.name || "guest"}  -  ${row.score}${short ? "  ("+short+")" : ""}`;
-    ol.appendChild(li);
-  });
+    ol.innerHTML = '';
+    if (!Array.isArray(data) || data.length === 0) {
+      ol.innerHTML = '<li>no scores yet</li>';
+      return;
+    }
+
+    data.forEach((row, i) => {
+      const li = document.createElement('li');
+      const short =
+        row.addr && row.addr.length > 10
+          ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}`
+          : '';
+      li.textContent = `${i + 1}. ${row.name || 'guest'}  -  ${row.score}${
+        short ? '  (' + short + ')' : ''
+      }`;
+      ol.appendChild(li);
+    });
+  } catch (err) {
+    console.error('[leaderboard]', err);
+    ol.innerHTML = '<li>error loading leaderboard</li>';
+  }
 }
+
 
 
 /* ======================= game core ======================= */
