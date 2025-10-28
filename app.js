@@ -637,34 +637,24 @@ function showEndGamePopup(score) {
   });
 
 // Share button functionality (sync-safe)
-const shareBtn = document.getElementById('share-btn');
-shareBtn.onclick = () => {
-  const shareText = `I just scored ${score} points in Candy Crush Mini!`;
-  const shareUrl = 'https://candycrush-liard.vercel.app'; // Ensure this URL is valid and accessible
-
+const handleShare = async () => {
   try {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Candy Crush Mini',
-        text: shareText,
-        url: shareUrl,
-      })
-      .then(() => console.log('shared successfully'))
-      .catch(err => {
-        console.warn('share failed', err);
-        alert('Sharing was canceled or blocked.');
-      });
-    } else {
-      // fallback: copy to clipboard
-      navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
-        alert('Copied share link to clipboard!');
-      }).catch(() => {
-        prompt('Copy this to share:', `${shareText} ${shareUrl}`);
-      });
+    const url = 'https://farcaster.xyz/miniapps/VJBtrjo-cwfS/hyper-run'; // your game URL (root is fine)
+    const text = `I scored ${score} in Hyper Run! Can you beat me?`;
+
+    const result = await sdk.actions.composeCast({
+      text,
+      embeds: [url],         // up to 2 URLs
+      // channelKey: 'gaming', // optional: post to a channel
+    });
+
+    // user might cancel; result.cast will be null then
+    if (!result?.cast) {
+      // optional: toast “Share canceled”
     }
-  } catch (err) {
-    console.error('share error', err);
-    alert('Sharing not supported here. Link copied instead.');
+  } catch (e) {
+    console.warn('share failed', e);
+    // optional: fallback – copy link, etc.
   }
 };
 }
