@@ -617,11 +617,6 @@ async function endGame() {
 /* boot to home */
 showScreen('home');
 
-setTimeout(() => {
-  console.log('[mini debug]', window.sdk?.user, window.sdk?.wallet);
-  alert('check console logs for sdk info');
-}, 2000);
-
 // ask player name once
 if (!localStorage.getItem('cc_name')) {
   const n = prompt('enter your name for the leaderboard') || 'guest';
