@@ -637,24 +637,50 @@ function showEndGamePopup(score) {
   });
 
 // Share button functionality (sync-safe)
-const handleShare = async () => {
+const shareBtn = document.getElementById('share-btn');
+
+shareBtn.onclick = async () => {
+  const shareText = `I just scored ${score} points in Candy Crush Mini!`;
+  const shareUrl = 'https://candycrush-liard.vercel.app'; // The URL you're sharing
+
   try {
-    const url = 'https://farcaster.xyz/miniapps/VJBtrjo-cwfS/hyper-run'; // your game URL (root is fine)
-    const text = `I scored ${score} in Hyper Run! Can you beat me?`;
-
-    const result = await sdk.actions.composeCast({
-      text,
-      embeds: [url],         // up to 2 URLs
-      // channelKey: 'gaming', // optional: post to a channel
+    // Attempt to copy to clipboard first
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    alert('Link copied to clipboard! You can now share it anywhere.');
+  } catch (err) {
+    // If copying fails, show a fallback modal or prompt
+    console.error('Clipboard copy failed', err);
+    
+    // Optional: open a prompt to copy the link manually
+    prompt('Copy this link to share:', `${shareText} ${shareUrl}`);
+    
+    // Optional: create a simple modal with the shareable link
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(0, 0, 0, 0.7)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.color = 'white';
+    modal.style.fontSize = '20px';
+    modal.style.padding = '20px';
+    modal.innerHTML = `
+      <div style="background: #333; padding: 20px; border-radius: 10px;">
+        <h2>Share Your Score!</h2>
+        <p>${shareText}</p>
+        <a href="${shareUrl}" target="_blank" style="color: #8a5cff; text-decoration: none;">Click to visit the game!</a>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Close modal on click
+    modal.addEventListener('click', () => {
+      document.body.removeChild(modal);
     });
-
-    // user might cancel; result.cast will be null then
-    if (!result?.cast) {
-      // optional: toast “Share canceled”
-    }
-  } catch (e) {
-    console.warn('share failed', e);
-    // optional: fallback – copy link, etc.
   }
 };
 }
