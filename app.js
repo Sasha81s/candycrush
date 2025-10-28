@@ -646,13 +646,13 @@ shareBtn.onclick = async () => {
   try {
     // Attempt to copy to clipboard first
     await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    alert('Link copied to clipboard! You can now share it anywhere.');
+    showCustomModal('Link copied to clipboard! You can now share it anywhere.');
   } catch (err) {
     // If copying fails, show a fallback modal or prompt
     console.error('Clipboard copy failed', err);
     
-    // Optional: open a prompt to copy the link manually
-    prompt('Copy this link to share:', `${shareText} ${shareUrl}`);
+    // Show a custom modal with the shareable link
+    showCustomModal(`Failed to copy to clipboard. You can manually share: ${shareText} ${shareUrl}`);
     
     // Optional: create a simple modal with the shareable link
     const modal = document.createElement('div');
@@ -683,6 +683,33 @@ shareBtn.onclick = async () => {
     });
   }
 };
+
+// Function to display custom modal
+function showCustomModal(message) {
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.top = '50%';
+  modal.style.left = '50%';
+  modal.style.transform = 'translate(-50%, -50%)';
+  modal.style.padding = '20px';
+  modal.style.background = '#333';
+  modal.style.color = 'white';
+  modal.style.borderRadius = '10px';
+  modal.style.fontSize = '18px';
+  modal.style.zIndex = '9999';
+  
+  modal.innerHTML = `
+    <p>${message}</p>
+    <button style="background-color: #8a5cff; color: white; border: none; padding: 10px 20px; border-radius: 5px;">Close</button>
+  `;
+  
+  document.body.appendChild(modal);
+
+  // Close modal when button is clicked
+  modal.querySelector('button').addEventListener('click', () => {
+    document.body.removeChild(modal);
+  });
+}
 }
 
 
