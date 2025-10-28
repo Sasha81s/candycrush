@@ -37,18 +37,26 @@ module.exports = async function handler(req, res) {
     let existing = [];
     try {
       existing = await redis.zrange(key, 0, -1);
-    } catch {}
+    } catch (err) {
+      console.error('[redis error]', err);
+      return res.status(500).json({ ok: false, err: 'failed to fetch from Redis' });
+    }
 
     let old = null;
     for (const r of existing) {
-      const data = JSON.parse(r);
-      if (data.uid === uniqueId) {
-        old = data;
-        break;
+      try {
+        const data = JSON.parse(r);
+        if (data.uid === uniqueId) {
+          old = data;
+          break;
+        }
+      } catch (parseError) {
+        console.error('[json parse error]', parseError);
+        continue;
       }
     }
 
-    // Update only if higher or new
+    // Update only if higher score or new
     if (!old || safeScore > (old.score || 0)) {
       const entry = {
         uid: uniqueId,
