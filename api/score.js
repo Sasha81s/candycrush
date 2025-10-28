@@ -67,7 +67,7 @@ module.exports = async function handler(req, res) {
         ts: Date.now()
       };
 
-      // Add or update the score
+      // Add or update the score in Redis
       await redis.zadd(key, { score: safeScore, member: JSON.stringify(entry) });
     }
 
