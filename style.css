@@ -244,4 +244,41 @@ html, body{
 #leader-list li:nth-child(n+4) {
   background: rgba(47, 41, 53, 0.6);
 }
+/* End Game Modal */
+.end-game-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.popup-content {
+  background: #242424;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #8a5cff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #7a47ff;
+}
+
 }

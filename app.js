@@ -618,11 +618,40 @@ async function endGame() {
     console.error('[submit error]', err);
   }
 
-  // Fetch leaderboard after submitting score to get the latest data
-  await renderLeaderboard();
-  showScreen('home');
-  document.getElementById('leader-modal')?.classList.add('show');
+  // Show end-game popup
+  showEndGamePopup(scoreValue);
 }
+
+function showEndGamePopup(score) {
+  // Display the score in the popup
+  document.getElementById('final-score').textContent = score;
+
+  // Show the popup modal
+  const popup = document.getElementById('end-game-popup');
+  popup.style.display = 'flex';
+
+  // Play Again button functionality
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    popup.style.display = 'none';
+    startGame();  // Restart the game
+  });
+
+  // Share button functionality
+  document.getElementById('share-btn').addEventListener('click', () => {
+    const shareText = `I just scored ${score} in the game! Play now: https://your-game-link.com`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'My Game Score',
+        text: shareText,
+        url: 'https://your-game-link.com',
+      }).catch(console.error);
+    } else {
+      // Fallback for browsers that do not support the Web Share API
+      prompt('Copy this to share:', shareText);
+    }
+  });
+}
+
 
 
 
