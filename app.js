@@ -643,44 +643,25 @@ shareBtn.onclick = async () => {
   const shareText = `I just scored ${score} points in Candy Crush Mini!`;
   const shareUrl = 'https://candycrush-liard.vercel.app'; // The URL you're sharing
 
+  // Check if Web Share API is available
   try {
-    // Attempt to copy to clipboard first
-    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-    showCustomModal('Link copied to clipboard! You can now share it anywhere.');
+    if (navigator.share) {
+      // Attempt to share the content using Web Share API
+      await navigator.share({
+        title: 'Candy Crush Mini',
+        text: shareText,
+        url: shareUrl,
+      });
+      console.log('Share successful!');
+    } else {
+      // If Web Share API is unavailable, fallback to copying the link
+      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      showCustomModal('Link copied to clipboard! You can now share it anywhere.');
+    }
   } catch (err) {
-    // If copying fails, show a fallback modal or prompt
-    console.error('Clipboard copy failed', err);
-    
-    // Show a custom modal with the shareable link
-    showCustomModal(`Failed to copy to clipboard. You can manually share: ${shareText} ${shareUrl}`);
-    
-    // Optional: create a simple modal with the shareable link
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.background = 'rgba(0, 0, 0, 0.7)';
-    modal.style.display = 'flex';
-    modal.style.justifyContent = 'center';
-    modal.style.alignItems = 'center';
-    modal.style.color = 'white';
-    modal.style.fontSize = '20px';
-    modal.style.padding = '20px';
-    modal.innerHTML = `
-      <div style="background: #333; padding: 20px; border-radius: 10px;">
-        <h2>Share Your Score!</h2>
-        <p>${shareText}</p>
-        <a href="${shareUrl}" target="_blank" style="color: #8a5cff; text-decoration: none;">Click to visit the game!</a>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    
-    // Close modal on click
-    modal.addEventListener('click', () => {
-      document.body.removeChild(modal);
-    });
+    console.error('Share failed', err);
+    // If both share and clipboard copy fail, notify user
+    showCustomModal('Sharing failed. Please try again.');
   }
 };
 
@@ -711,10 +692,6 @@ function showCustomModal(message) {
   });
 }
 }
-
-
-
-
 
 
 
