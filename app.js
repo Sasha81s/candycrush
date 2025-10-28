@@ -648,18 +648,53 @@ function showEndGamePopup(score) {
       console.log('Transaction initiated:', txHash);
 
       // Wait for the transaction to be mined (confirmed)
-      await waitForTransactionConfirmation(txHash);
-
-      console.log('Transaction successful! Now restarting the game.');
-
-      // Now, restart the game after the transaction
-      startGame(); // Proceed to start the game after the transaction
+      const receipt = await waitForTransactionConfirmation(txHash);
+      
+      if (receipt && receipt.status === '0x1') {
+        console.log('Transaction confirmed, now restarting the game.');
+        startGame(); // Proceed to start the game after the transaction
+      } else {
+        throw new Error('Transaction failed');
+      }
     } catch (err) {
       console.error('Transaction failed or canceled:', err);
       alert('Transaction failed or canceled. Please try again.');
     }
   });
 }
+
+// Wait for the transaction to be confirmed
+async function waitForTransactionConfirmation(txHash) {
+  const provider = await getProvider();
+
+  return new Promise((resolve, reject) => {
+    const checkTransaction = async () => {
+      try {
+        const receipt = await provider.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txHash],
+        });
+
+        if (receipt) {
+          if (receipt.blockNumber) {
+            // Transaction is confirmed
+            resolve(receipt);
+          } else {
+            // Transaction is still pending
+            setTimeout(checkTransaction, 2000); // Check every 2 seconds
+          }
+        } else {
+          reject('Transaction receipt not found');
+        }
+      } catch (err) {
+        reject('Error checking transaction receipt: ' + err.message);
+      }
+    };
+
+    checkTransaction();
+  });
+}
+
 
 // Wait for the transaction to be confirmed
 async function waitForTransactionConfirmation(txHash) {
