@@ -254,10 +254,22 @@ async function renderLeaderboard() {
 
     data.forEach((row, i) => {
       const li = document.createElement('li');
-      const short = row.addr
-        ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}`
-        : '';
-      li.textContent = `${i + 1}. ${row.name} — ${row.score}${short ? ' (' + short + ')' : ''}`;
+
+      // Assign medal classes based on rank
+      if (i === 0) {
+        li.innerHTML = `<span class="gold-medal">🥇</span> ${i + 1}. ${row.name} — ${row.score}`;
+      } else if (i === 1) {
+        li.innerHTML = `<span class="silver-medal">🥈</span> ${i + 1}. ${row.name} — ${row.score}`;
+      } else if (i === 2) {
+        li.innerHTML = `<span class="bronze-medal">🥉</span> ${i + 1}. ${row.name} — ${row.score}`;
+      } else {
+        li.textContent = `${i + 1}. ${row.name} — ${row.score}`;
+      }
+
+      // Add the short address if available
+      const short = row.addr ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}` : '';
+      if (short) li.textContent += ` (${short})`;
+
       ol.appendChild(li);
     });
   } catch (err) {

@@ -225,6 +225,20 @@ html, body{
   font-weight: 600;
   border: 1px solid #b497ff;
 }
+.gold-medal {
+  color: gold;
+  font-size: 1.5em;
+}
+
+.silver-medal {
+  color: silver;
+  font-size: 1.5em;
+}
+
+.bronze-medal {
+  color: #cd7f32;
+  font-size: 1.5em;
+}
 
 /* others */
 #leader-list li:nth-child(n+4) {
