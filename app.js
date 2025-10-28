@@ -243,17 +243,26 @@ async function renderLeaderboard() {
   ol.innerHTML = 'loading…';
 
   try {
-    // Fetch the updated leaderboard from the backend
-    const r = await fetch('https://candycrush-liard.vercel.app/api/top');
-    const data = await r.json();
+    // Fetch all users' scores by their unique ID (from 'user:{uniqueId}')
+    const leaderboard = [];
+    const keys = await redis.keys('user:*'); // Get all user keys
 
-    ol.innerHTML = '';
-    if (!Array.isArray(data) || data.length === 0) {
-      ol.innerHTML = '<li>no scores yet</li>';
-      return;
+    for (const key of keys) {
+      const scoreData = await redis.hgetall(key);  // Fetch data for each user
+      if (scoreData) {
+        leaderboard.push({
+          name: scoreData.name,
+          score: scoreData.score,
+          addr: scoreData.addr,
+        });
+      }
     }
 
-    data.forEach((row, i) => {
+    // Sort the leaderboard by score in descending order
+    leaderboard.sort((a, b) => b.score - a.score);
+
+    ol.innerHTML = '';
+    leaderboard.forEach((row, i) => {
       const li = document.createElement('li');
       const short =
         row.addr && row.addr.length > 10
@@ -267,7 +276,6 @@ async function renderLeaderboard() {
     ol.innerHTML = '<li>error loading leaderboard</li>';
   }
 }
-
 
 
 
