@@ -630,101 +630,38 @@ async function endGame() {
   showEndGamePopup(scoreValue);
 }
 
-// Play Again Button Logic with Transaction
-document.getElementById('play-again-btn').addEventListener('click', async () => {
+function showEndGamePopup(score) {
+  // Display the score in the popup
+  document.getElementById('final-score').textContent = score;
+
+  // Show the popup modal
   const popup = document.getElementById('end-game-popup');
-  popup.style.display = 'none';  // Close the game over popup
+  popup.style.display = 'flex';  // Ensure it's visible
 
-  try {
-    // Trigger transaction (ensure you have sendMandatoryTx() defined)
-    const txHash = await sendMandatoryTx();
-    console.log('Transaction initiated:', txHash);
+  // Play Again button functionality (trigger transaction first)
+  document.getElementById('play-again-btn').addEventListener('click', async () => {
+    popup.style.display = 'none'; // Close the game over popup
 
-    // Wait for the transaction to be confirmed
-    const receipt = await waitForTransactionConfirmation(txHash);
+    try {
+      // Trigger transaction
+      const txHash = await sendMandatoryTx();  // Execute your transaction function
+      console.log('Transaction initiated:', txHash);
 
-    // Check if the transaction was successful
-    if (receipt && receipt.status === '0x1') {
-      console.log('Transaction confirmed. Now restarting the game.');
-      startGame(); // Proceed to start the game after the transaction
-    } else {
-      throw new Error('Transaction failed');
-    }
-  } catch (err) {
-    console.error('Transaction failed or canceled:', err);
-    alert('Transaction failed or canceled. Please try again.');
-  }
-});
+      // Wait for the transaction to be mined (confirmed)
+      const receipt = await waitForTransactionConfirmation(txHash);
 
-// Function to wait for the transaction to be confirmed
-async function waitForTransactionConfirmation(txHash) {
-  const provider = await getProvider();
-
-  return new Promise((resolve, reject) => {
-    const checkTransaction = async () => {
-      try {
-        const receipt = await provider.request({
-          method: 'eth_getTransactionReceipt',
-          params: [txHash],
-        });
-
-        if (receipt) {
-          if (receipt.blockNumber) {
-            // Transaction confirmed
-            resolve(receipt);
-          } else {
-            // Transaction is still pending
-            setTimeout(checkTransaction, 2000); // Check every 2 seconds
-          }
-        } else {
-          reject('Transaction receipt not found');
-        }
-      } catch (err) {
-        reject('Error checking transaction receipt: ' + err.message);
+      if (receipt && receipt.status === '0x1') {
+        console.log('Transaction confirmed, now restarting the game.');
+        startGame(); // Restart the game after the transaction is confirmed
+      } else {
+        throw new Error('Transaction failed');
       }
-    };
-
-    checkTransaction();
+    } catch (err) {
+      console.error('Transaction failed or canceled:', err);
+      alert('Transaction failed or canceled. Please try again.');
+    }
   });
 }
-
-// Reactivate the sendMandatoryTx() function (for re-use)
-async function sendMandatoryTx() {
-  const addr = await ensureConnected();
-  const provider = await getProvider();
-
-  // Ensure Base network
-  try {
-    const chain = await provider.request({ method: 'eth_chainId' });
-    if (chain !== BASE_CHAIN_ID_HEX) {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      });
-    }
-  } catch (err) {
-    console.error('Error switching chain:', err);
-  }
-
-  const tx = {
-    from: addr,
-    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Your target address
-    value: '0x9184e72a000', // 0.00001 ETH in wei
-  };
-
-  try {
-    const hash = await provider.request({
-      method: 'eth_sendTransaction',
-      params: [tx],
-    });
-    console.log('Transaction sent with hash:', hash);
-    return hash;
-  } catch (err) {
-    console.error('Transaction failed:', err);
-    throw new Error('Transaction failed');
-  }
-}
-
 
 // Wait for the transaction to be confirmed
 async function waitForTransactionConfirmation(txHash) {
