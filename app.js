@@ -426,3 +426,4 @@ showScreen('home');
 
 // safety: if we’re inside a Mini App and ready wasn’t called yet, call it now
 setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0)
+setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);

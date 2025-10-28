@@ -55,12 +55,25 @@
 
 <!-- scripts -->
 <script type="module">
-  import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
-  window.sdk = sdk
-  // call ready once the DOM is parsed, then one frame later (so layout exists)
-  window.addEventListener('DOMContentLoaded', () => {
-    requestAnimationFrame(() => { try { sdk.actions.ready() } catch {} })
-  })
+  (async () => {
+    // 1) load the SDK in a way Warpcast’s webview likes
+    let sdk;
+    try {
+      ({ sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk?bundle'));
+      window.sdk = sdk;
+    } catch (e) {
+      console.error('miniapp sdk import failed', e);
+    }
+
+    // 2) call ready only after the page is fully painted
+    const callReady = () => { try { window.sdk?.actions?.ready() } catch (e) { console.warn(e) } };
+
+    if (document.readyState === 'complete') {
+      requestAnimationFrame(callReady);
+    } else {
+      window.addEventListener('load', () => requestAnimationFrame(callReady), { once: true });
+    }
+  })();
 </script>
-<script defer src="./app.js"></script>
+<script defer src="./app.js?v=2"></script>
 
