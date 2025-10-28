@@ -57,6 +57,24 @@ html, body{
   text-align:center;
 }
 
+#game-logo {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  margin-bottom: 50px;
+  filter: drop-shadow(0 0 10px rgba(255,255,255,.4));
+}
+
+#game-title {
+  font-size: 40px;
+  font-weight: 800;
+  color: #ff66cc;
+  text-shadow: 0 0 12px rgba(255,102,204,.7);
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+
+
 /* buttons */
 .btn{
   appearance:none;

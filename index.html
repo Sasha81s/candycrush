@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>CandyCrush Mini</title>
+    <title>Candy Crush Mini</title>
     <link rel="stylesheet" href="./style.css" />
     <style> html,body{margin:0;padding:0;height:100%;background:#000;} </style>
   </head>
@@ -15,11 +15,16 @@
           <button id="btn-connect" class="btn connect">connect wallet</button>
           <button id="btn-leader" class="btn">LEADERBOARD</button>
         </header>
-        <div class="home-center">
-          <button id="btn-play" class="btn primary play-btn">PLAY</button>
-          <p id="addr-pill" class="addr-pill" style="display:none;"></p>
-        </div>
-      </section>
+        
+<div class="home-center">
+  <img id="game-logo" src="./img/logo.png" alt="Game Logo" />
+  <h1 id="game-title">
+    CANDY CRUSH<br><span>MINI</span>
+  </h1>
+  <button id="btn-play" class="btn primary play-btn">PLAY</button>
+  <p id="addr-pill" class="addr-pill" style="display:none;"></p>
+</div>
+
 
       <!-- ===== GAME (don’t edit) ===== -->
       <section id="screen-game" class="screen">
@@ -43,8 +48,6 @@
       </div>
     </div>
 
-    <!-- scripts -->
-    <script src="./app.js"></script>
 <!-- scripts -->
 <script type="module">
   import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
