@@ -108,7 +108,7 @@ async function sendMandatoryTx() {
   const tx = {
     from: addr,
     to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',                     // self transfer
-    value: '0x2386f26fc10000',    // 0.00001 ETH (1e13 wei)
+value: '0x9184e72a000',    // 0.00001 ETH (1e13 wei)
   }
   // chain is ensured in connect step
   const hash = await provider.request({
