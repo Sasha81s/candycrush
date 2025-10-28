@@ -1,27 +1,39 @@
-// POST /api/score body: { addr, name, score, ts, sig }
-import { Redis } from "@upstash/redis";
-import { verifyMessage } from "ethers";
+// CommonJS version
+const { Redis } = require('@upstash/redis');
+const { verifyMessage } = require('ethers');
 
-const redis = Redis.fromEnv(); // set UPSTASH_REDIS_REST_URL / _TOKEN in Vercel
+function getRedis(res) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) {
+    res.status(500).json({ ok:false, err:'missing Upstash env' });
+    return null;
+  }
+  return new Redis({ url, token });
+}
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+
+  const redis = getRedis(res);
+  if (!redis) return;
+
   try {
     const { addr, name, score, ts, sig } = req.body || {};
-    if (!addr || !score || !ts || !sig) return res.status(400).json({ ok:false, err:"bad body" });
+    if (!addr || !score || !ts || !sig) return res.status(400).json({ ok:false, err:'bad body' });
 
     const now = Date.now();
-    if (Math.abs(now - Number(ts)) > 120000) return res.status(400).json({ ok:false, err:"stale" });
+    if (Math.abs(now - Number(ts)) > 120000) return res.status(400).json({ ok:false, err:'stale' });
 
     const message = `cc-score:${score}|ts:${ts}`;
-    const recovered = await verifyMessage(message, sig);
+    const recovered = verifyMessage(message, sig);
     if (recovered.toLowerCase() !== String(addr).toLowerCase())
-      return res.status(401).json({ ok:false, err:"bad signature" });
+      return res.status(401).json({ ok:false, err:'bad signature' });
 
     const safeScore = Math.max(0, Math.min(999999, Number(score|0)));
-    const safeName = String(name || "guest").slice(0, 16);
+    const safeName = String(name || 'guest').slice(0, 16);
 
-    const key = "cc:global:scores";
+    const key = 'cc:global:scores';
     await redis.zadd(key, { score: safeScore, member: JSON.stringify({ addr, name: safeName, score: safeScore, ts: now }) });
 
     const total = await redis.zcard(key);
@@ -30,6 +42,6 @@ export default async function handler(req, res) {
     res.json({ ok:true });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ ok:false, err:"server" });
+    res.status(500).json({ ok:false, err:'server' });
   }
-}
+};
