@@ -28,77 +28,6 @@ window.onload = () => {
     if (name === 'home') stopTimer();
   }
 
-
-  // Add event listener for the play button
-document.getElementById('btn-play')?.addEventListener('click', async (e) => {
-  const btn = e.currentTarget;
-  if (!btn) return;
-  btn.disabled = true;
-  btn.classList.add('loading');
-  
-  try {
-    // Check if running in Farcaster mini-app
-    const inMini = !!(window.sdk && window.sdk.wallet);
-
-    // If in Farcaster, ensure the wallet is connected and send a mandatory transaction
-    if (inMini) {
-      await ensureConnected();  // Ensure wallet connection
-      await sendMandatoryTx();  // Send transaction before starting game
-    }
-
-    // Preload assets (image, game assets)
-    await preload(ASSETS);
-
-    // Start the game after preload
-    startGame();
-
-  } catch (err) {
-    console.error('Error starting game:', err);
-    alert('Transaction required to start the game');
-  } finally {
-    // Reset button state
-    btn.classList.remove('loading');
-    btn.disabled = false;
-  }
-});
-
-function startGame() {
-  console.log("Game is starting...");
-
-  // reset score, timer, and board
-  score = 0;
-  if (scoreEl) scoreEl.textContent = '0';
-  if (timeEl) timeEl.textContent = '60';
-
-  // force-show game screen with inline styles
-  const home = document.getElementById('screen-home');
-  const game = document.getElementById('screen-game');
-  if (home) { home.classList.remove('active'); home.style.display = 'none'; home.style.visibility = 'hidden'; }
-  if (game) { game.classList.add('active'); game.style.display = 'block'; game.style.visibility = 'visible'; game.style.zIndex = '2'; }
-
-  // Initialize the game board after render
-  const board = document.getElementById('board');
-  if (board) {
-    board.style.minWidth = '200px';
-    board.style.minHeight = '200px';
-    board.style.backgroundImage = 'repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px), repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px)';
-    board.style.outline = '2px solid rgba(255,255,255,.25)';
-    board.style.borderRadius = '12px';
-
-    // Proceed with building the board
-    cells = [];
-    types = new Array(W * W);
-    resolving = false;
-
-    buildBoard(board);
-    fitBoard();
-    startTimer();  // Start the game timer
-    console.log("[Game] Board initialized, starting the game!");
-  } else {
-    console.error("[Game] Error: No game board element found.");
-  }
-}
-
   // ========== Farcaster Wallet Connect ==========
 
   const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
@@ -174,42 +103,45 @@ function startGame() {
   }
 
   // Add event listener for the connect wallet button
-  document.getElementById('btn-connect')?.addEventListener('click', async () => {
-    try {
-      await connectFarcasterWallet();
-    } catch {}
-  });
+  const btnConnect = document.getElementById('btn-connect');
+  if (btnConnect) {
+    btnConnect.addEventListener('click', async () => {
+      try {
+        await connectFarcasterWallet();
+      } catch {}
+    });
+  }
 
-  // ========== Game Button Logic ==========
-
-  // Add event listener for the play button
-  document.getElementById('btn-play')?.addEventListener('click', async (e) => {
-    const btn = e.currentTarget;
-    if (!btn) return;
-    btn.disabled = true;
-    btn.classList.add('loading');
-    try {
-      const inMini = !!(window.sdk && window.sdk.wallet);
-      if (inMini) {
-        await ensureConnected();
-        await sendMandatoryTx();
-        await preload(ASSETS);
-        startGame();
-      } else {
-        await preload(ASSETS);
-        startGame(); // dev mode outside Farcaster
+  // ======================= Game Button Logic =======================
+  const btnPlay = document.getElementById('btn-play');
+  if (btnPlay) {
+    btnPlay.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      if (!btn) return;
+      btn.disabled = true;
+      btn.classList.add('loading');
+      try {
+        const inMini = !!(window.sdk && window.sdk.wallet);
+        if (inMini) {
+          await ensureConnected();
+          await sendMandatoryTx();
+          await preload(ASSETS);
+          startGame();
+        } else {
+          await preload(ASSETS);
+          startGame(); // dev mode outside Farcaster
+        }
+      } catch (err) {
+        console.error(err);
+        alert('transaction required to start');
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
       }
-    } catch (err) {
-      console.error(err);
-      alert('transaction required to start');
-    } finally {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
-  });
+    });
+  }
 
-  // ========== Leaderboard Logic ==========
-
+  // ======================= Leaderboard Logic =======================
   async function renderLeaderboard() {
     const ol = document.getElementById('leader-list');
     if (!ol) return;
