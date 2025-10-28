@@ -1,4 +1,4 @@
-// CommonJS version
+// simple top list reader
 const { Redis } = require('@upstash/redis');
 
 function getRedis(res) {
@@ -13,7 +13,6 @@ function getRedis(res) {
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).end();
-
   const redis = getRedis(res);
   if (!redis) return;
 
@@ -21,10 +20,20 @@ module.exports = async function handler(req, res) {
     const n = Math.max(1, Math.min(50, Number(req.query.n || 10)));
     const key = 'cc:global:scores';
 
-    const rows = await redis.zrange(key, -n, -1, { withScores: true }); // [{member, score}]
+    // fetch the top n scores (highest first)
+    const rows = await redis.zrange(key, -n, -1, { withScores: true });
+    if (!Array.isArray(rows) || !rows.length) return res.json([]);
+
+    // parse and sort descending
     const mapped = rows.map(r => ({ ...JSON.parse(r.member), score: r.score }));
     mapped.sort((a,b) => b.score - a.score);
-    const out = mapped.map((row, i) => ({ rank:i+1, name:row.name, score:row.score, addr:row.addr }));
+
+    const out = mapped.map((row, i) => ({
+      rank: i + 1,
+      name: row.name,
+      score: row.score,
+      addr: row.addr
+    }));
 
     res.json(out);
   } catch (e) {
