@@ -168,33 +168,33 @@ async function ensureConnected() {
 }
 
 // mandatory entry transaction
-async function sendMandatoryTx() {
-  const addr = await ensureConnected();
-  const provider = await getProvider();
+// async function sendMandatoryTx() {
+//   const addr = await ensureConnected();
+//   const provider = await getProvider();
 
-  // ensure Base
-  try {
-    const chain = await provider.request({ method: 'eth_chainId' });
-    if (chain !== BASE_CHAIN_ID_HEX) {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      });
-    }
-  } catch {}
+//   // ensure Base
+//   try {
+//     const chain = await provider.request({ method: 'eth_chainId' });
+//     if (chain !== BASE_CHAIN_ID_HEX) {
+//       await provider.request({
+//         method: 'wallet_switchEthereumChain',
+//         params: [{ chainId: BASE_CHAIN_ID_HEX }],
+//       });
+//     }
+//   } catch {}
 
-  const tx = {
-    from: addr,
-    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',
-    value: '0x9184e72a000', // 0.00001 ETH in wei
-  };
+//   const tx = {
+//     from: addr,
+//     to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',
+//     value: '0x9184e72a000', // 0.00001 ETH in wei
+//   };
 
-  const hash = await provider.request({
-    method: 'eth_sendTransaction',
-    params: [tx],
-  });
-  return hash;
-}
+//   const hash = await provider.request({
+//     method: 'eth_sendTransaction',
+//     params: [tx],
+//   });
+//   return hash;
+// }
 
 /* buttons */
 document.getElementById('btn-connect')?.addEventListener('click', async () => {
@@ -210,7 +210,7 @@ document.getElementById('btn-play')?.addEventListener('click', async (e) => {
     const inMini = !!(window.sdk && window.sdk.wallet);
     if (inMini) {
       await ensureConnected();
-      await sendMandatoryTx();
+      // await sendMandatoryTx();
       await preload(ASSETS);
       startGame();
     } else {
@@ -644,8 +644,8 @@ shareBtn.onclick = async () => {
   const shareUrl = 'https://candycrush-liard.vercel.app'; // The URL you're sharing
 
   // Check if Web Share API is available
-  try {
-    if (navigator.share) {
+  if (navigator.share) {
+    try {
       // Attempt to share the content using Web Share API
       await navigator.share({
         title: 'Candy Crush Mini',
@@ -653,15 +653,20 @@ shareBtn.onclick = async () => {
         url: shareUrl,
       });
       console.log('Share successful!');
-    } else {
-      // If Web Share API is unavailable, fallback to copying the link
+    } catch (err) {
+      console.error('Share failed:', err);
+      showCustomModal('Sharing failed. Please try again.');
+    }
+  } else {
+    console.log('Web Share API not supported in this environment.');
+    // Fallback to copying to clipboard if Web Share API is not available
+    try {
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
       showCustomModal('Link copied to clipboard! You can now share it anywhere.');
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+      showCustomModal('Failed to copy to clipboard. Please try again.');
     }
-  } catch (err) {
-    console.error('Share failed', err);
-    // If both share and clipboard copy fail, notify user
-    showCustomModal('Sharing failed. Please try again.');
   }
 };
 
