@@ -215,26 +215,33 @@ document.getElementById('btn-play')?.addEventListener('click', async (e) => {
   const btn = e.currentTarget;
   if (!btn) return;
   btn.disabled = true;
-  btn.classList.add('loading');
+  btn.classList.add('loading'); // Show loading state on the button
+
   try {
+    // If we are in the Farcaster Mini app
     const inMini = !!(window.sdk && window.sdk.wallet);
     if (inMini) {
+      // Ensure wallet is connected and transaction is sent
       await ensureConnected();
-      await sendMandatoryTx();
+      await sendMandatoryTx();  // This triggers the transaction
+
+      // Once the transaction is confirmed, start the game
       await preload(ASSETS);
       startGame();
     } else {
+      // If not in Mini app (for development mode outside Farcaster)
       await preload(ASSETS);
-      startGame(); // dev mode outside Farcaster
+      startGame(); // Start the game in dev mode
     }
   } catch (err) {
     console.error(err);
-    alert('transaction required to start');
+    alert('Transaction required to start. Please try again.');
   } finally {
-    btn.classList.remove('loading');
-    btn.disabled = false;
+    btn.classList.remove('loading'); // Remove loading state
+    btn.disabled = false; // Re-enable the button
   }
 });
+
 
 /* ======================= leaderboard ======================= */
 const KEY = 'cc_scores_v1';
