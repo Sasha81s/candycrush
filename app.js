@@ -1,12 +1,5 @@
 import { sdk } from '@farcaster/miniapp-sdk';
 
-
-const accountAssociation = {
-  header: 'eyJmaWQiOjE0MTYwOTEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhCRGRmYjZhMTBENDdiOUU2OTk0NEE5Mzc3RjQyZDY1NzZBRDQ5YUE1In0',
-  payload: 'eyJkb21haW4iOiJjYW5keWNydXNoLWxpYXJkLnZlcmNlbC5hcHAifQ',
-  signature: 'Bc6gzjvCHbb41FQ+/OUwzh05Jy+SOQemqcEMXB6xHt19bOnmniBAffFzez1mdiRYIrpWqmlwx+73XLr1aNgsKBs=',
-};
-
 // Associate your game with Farcaster account
 if (window.sdk) {
   sdk.actions.setAccountAssociation(accountAssociation);
