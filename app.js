@@ -644,7 +644,7 @@ async function endGame() {
 
 
 
- // Track if the transaction is pending
+// Track if the transaction is pending
 let isTransactionPending = false;
 
 function showEndGamePopup(score) {
@@ -689,7 +689,7 @@ function showEndGamePopup(score) {
           throw new Error('Transaction failed');
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error('Transaction failed:', err);
         alert('Transaction failed. Please try again.');
       })
@@ -754,6 +754,7 @@ async function sendMandatoryTx() {
     throw new Error("Transaction failed");
   }
 }
+
 
 
 
