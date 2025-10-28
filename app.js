@@ -58,15 +58,31 @@ async function fetchTop(n = 10) {
   if (name === 'home') stopTimer();
 }
 
-document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
-document.getElementById('btn-leader').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-leader');
-  if (btn) btn.disabled = true;
-  await renderLeaderboard();
-  modals.leader?.removeAttribute('hidden');
-  modals.leader?.classList.add('show');
-  if (btn) btn.disabled = false;
+// Modified Exit button listener
+document.getElementById('btn-exit').addEventListener('click', () => {
+  // Hide the end-game popup when the Exit button is clicked
+  const popup = document.getElementById('end-game-popup');
+  if (popup) {
+    popup.style.display = 'none';  // Hide the popup
+  }
+
+  // Navigate to the home screen
+  showScreen('home'); // Switch to the home screen
+
+  // Reset game state if needed
+  score = 0;  // Reset score
+  if (scoreEl) scoreEl.textContent = '0'; // Reset score display
+
+  time = 10; // Reset time to default (or set your own value)
+  if (timeEl) timeEl.textContent = String(time); // Update timer display
+  stopTimer();  // Stop the timer
+
+  // Reset other game-related state
+  cells = [];
+  types = new Array(W * W);  // Reinitialize the grid
+  resolving = false;  // Reset resolving state
 });
+
 
 document.getElementById('btn-close-leader').addEventListener('click', () => {
   modals.leader?.classList.remove('show');
