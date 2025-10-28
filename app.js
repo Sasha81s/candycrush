@@ -252,29 +252,21 @@ async function renderLeaderboard() {
       return;
     }
 
-data.forEach((row, i) => {
-  const li = document.createElement('li');
-  const rank = i + 1;
-  const short =
-    row.addr && row.addr.length > 10
-      ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}`
-      : '';
-
-  // add medal emoji for top 3
-  let medal = '';
-  if (rank === 1) medal = '🥇';
-  else if (rank === 2) medal = '🥈';
-  else if (rank === 3) medal = '🥉';
-
-  li.innerHTML = `<span>${medal} ${rank}. ${row.name || 'guest'}</span>
-                  <span>${row.score}${short ? ' (' + short + ')' : ''}</span>`;
-  ol.appendChild(li);
-});
+    data.forEach((row, i) => {
+      const li = document.createElement('li');
+      const short =
+        row.addr && row.addr.length > 10
+          ? `${row.addr.slice(0, 6)}…${row.addr.slice(-4)}`
+          : '';
+      li.textContent = `${i + 1}. ${row.name || 'guest'}  —  ${row.score}${short ? '  (' + short + ')' : ''}`;
+      ol.appendChild(li);
+    });
   } catch (err) {
     console.error('[leaderboard]', err);
     ol.innerHTML = '<li>error loading leaderboard</li>';
   }
 }
+
 
 
 
@@ -614,7 +606,8 @@ async function endGame() {
     console.error('[submit error]', err);
   }
 
-  await renderLeaderboard();
+  // Immediately refresh leaderboard after score is submitted
+  await renderLeaderboard();  // This fetches the latest leaderboard data
   showScreen('home');
   document.getElementById('leader-modal')?.classList.add('show');
 }
