@@ -19,20 +19,26 @@ module.exports = async function handler(req, res) {
     const { name, score, addr, fid } = req.body || {};
     if (typeof score !== 'number') return res.status(400).json({ ok:false, err:'bad body' });
 
+    // Validate incoming data
+    if (!name || (!addr && !fid)) {
+      return res.status(400).json({ ok:false, err:'missing name or identity (addr/fid)' });
+    }
+
     const safeScore = Math.max(0, Math.min(999999, score | 0));
     const safeName = String(name || 'guest').slice(0, 32);
     const safeAddr = String(addr || '').toLowerCase();
     const safeFid = fid ? String(fid) : null;
     const key = 'cc:global:scores';
 
-    // use fid or addr as unique ID
+    // Use fid or addr as unique ID
     const uniqueId = safeFid ? `fid:${safeFid}` : (safeAddr || `anon:${safeName}`);
 
-    // get all existing scores
+    // Get existing scores to check for updates
     let existing = [];
     try {
       existing = await redis.zrange(key, 0, -1);
     } catch {}
+
     let old = null;
     for (const r of existing) {
       const data = JSON.parse(r);
@@ -42,7 +48,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // update only if higher or new
+    // Update only if higher or new
     if (!old || safeScore > (old.score || 0)) {
       const entry = {
         uid: uniqueId,
@@ -55,13 +61,13 @@ module.exports = async function handler(req, res) {
       await redis.zadd(key, { score: safeScore, member: JSON.stringify(entry) });
     }
 
-    // trim to top 100
+    // Trim to top 100
     const total = await redis.zcard(key);
     if (total > 100) await redis.zremrangebyrank(key, 0, total - 101);
 
     res.json({ ok: true });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ ok:false, err:'server' });
+    console.error('[ERROR] Failed to submit score:', e);
+    res.status(500).json({ ok:false, err:'server error' });
   }
 };
