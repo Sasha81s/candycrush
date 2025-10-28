@@ -579,11 +579,15 @@ async function endGame() {
 
   // try to read Farcaster identity if inside mini app
   try {
-    if (window.sdk?.user?.fid) fid = window.sdk.user.fid;
+    if (window.sdk?.user?.fid) {
+      fid = window.sdk.user.fid;
+      console.log('[debug] Farcaster ID:', fid);  // log Farcaster ID
+    }
     if (window.sdk?.wallet?.getEthereumProvider) {
       const provider = await window.sdk.wallet.getEthereumProvider();
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       addr = accounts?.[0] || null;
+      console.log('[debug] Wallet Address:', addr);  // log wallet address
     }
   } catch (err) {
     console.warn('[mini identity fetch failed]', err);
@@ -612,6 +616,7 @@ async function endGame() {
   showScreen('home');
   document.getElementById('leader-modal')?.classList.add('show');
 }
+
 
 
 
