@@ -637,9 +637,6 @@ async function endGame() {
 
 
 
-
-
-
 // Track if the transaction is pending
 let isTransactionPending = false;
 
