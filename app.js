@@ -320,7 +320,7 @@ let score = 0;
 let resolving = false;
 
 // timer
-let time = 60;
+let time = 10;
 let timerId = null;
 const timeEl = document.getElementById('time');
 const scoreEl = document.getElementById('score');
