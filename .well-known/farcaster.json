@@ -1,7 +1,7 @@
 {
   "name": "CandyCrush Mini",
   "iconUrl": "/img/icon.png",
-  "webUrl": "https://YOUR-DOMAIN/index.html",
+  "webUrl": "https://candycrush-liard.vercel.app",
   "splash": {
     "title": "CandyCrush",
     "description": "match 3 in a mini app",
