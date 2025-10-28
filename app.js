@@ -630,34 +630,38 @@ function showEndGamePopup(score) {
   const popup = document.getElementById('end-game-popup');
   popup.style.display = 'flex';  // Ensure it's visible
 
+<button id="share-btn">Share</button>
+
   // Play Again button functionality
   document.getElementById('play-again-btn').addEventListener('click', () => {
     popup.style.display = 'none';
     startGame();  // Restart the game
   });
 
+  // Add Share Button functionality
+  const shareBtn = document.getElementById('share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', handleShare); // Share when clicked
+  }
+}
+
 const handleShare = async () => {
   try {
-    const url = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush'; // Replace with your actual Candy Crush game URL
+    const url = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush'; // Your game URL
     const text = `I scored ${score} in Candy Crush! Can you beat me? 🍬💥`;
 
     const result = await sdk.actions.composeCast({
       text,
-      embeds: [url],         // Optional: you can also include links to images or videos
+      embeds: [url],  // Include the game URL
     });
 
-    // If the user cancels the share, `result.cast` will be null.
     if (!result?.cast) {
-      // Optional: Toast message for the canceled share
       console.log("Share canceled");
     }
   } catch (e) {
     console.warn('Share failed', e);
-    // Optional: Fallback if share fails – e.g., copy the URL to clipboard.
   }
 };
-}
-
 
 
 /* boot to home */
