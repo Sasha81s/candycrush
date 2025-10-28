@@ -120,6 +120,36 @@ html, body{
     height:min(100vh, var(--h));
   }
 }
+
+/* ensure only the active screen is visible */
+.screen { position:absolute; inset:0; display:none; visibility:hidden; }
+.screen.active { display:block; visibility:visible; }
+
+/* board defaults (always apply) */
+:root { --board: 480px; }
+.board{
+  width: var(--board);
+  height: var(--board);
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 8px;
+}
+.box{
+  background: rgba(255,255,255,.08) center/cover no-repeat; /* shows even if image fails */
+  border-radius: 10px;
+  transition: transform .08s ease;
+  user-select: none;
+  touch-action: none;
+}
+.box.preview{ opacity:.85; }
+.box.dragging{ z-index:1; }
+
+/* modal hidden by default */
+.modal{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.55); z-index:10; }
+.modal.show{ display:flex !important; }
+.modal[hidden]{ display:none !important; }
+
 /* ---------- BOARD GRID ---------- */
 :root { --board: 480px; }
 

