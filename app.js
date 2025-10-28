@@ -28,27 +28,76 @@ window.onload = () => {
     if (name === 'home') stopTimer();
   }
 
-  // Add event listener to exit button
-  document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
 
-  // Add event listener to leaderboard button
-  document.getElementById('btn-leader').addEventListener('click', async () => {
-    const btn = document.getElementById('btn-leader');
-    if (btn) btn.disabled = true;
+  // Add event listener for the play button
+document.getElementById('btn-play')?.addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  if (!btn) return;
+  btn.disabled = true;
+  btn.classList.add('loading');
+  
+  try {
+    // Check if running in Farcaster mini-app
+    const inMini = !!(window.sdk && window.sdk.wallet);
 
-    // Fetch and render the leaderboard
-    await renderLeaderboard();
-    modals.leader?.removeAttribute('hidden');
-    modals.leader?.classList.add('show');
+    // If in Farcaster, ensure the wallet is connected and send a mandatory transaction
+    if (inMini) {
+      await ensureConnected();  // Ensure wallet connection
+      await sendMandatoryTx();  // Send transaction before starting game
+    }
 
-    if (btn) btn.disabled = false;
-  });
+    // Preload assets (image, game assets)
+    await preload(ASSETS);
 
-  // Add event listener to close leaderboard modal
-  document.getElementById('btn-close-leader').addEventListener('click', () => {
-    modals.leader?.classList.remove('show');
-    modals.leader?.setAttribute('hidden', '');
-  });
+    // Start the game after preload
+    startGame();
+
+  } catch (err) {
+    console.error('Error starting game:', err);
+    alert('Transaction required to start the game');
+  } finally {
+    // Reset button state
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+});
+
+function startGame() {
+  console.log("Game is starting...");
+
+  // reset score, timer, and board
+  score = 0;
+  if (scoreEl) scoreEl.textContent = '0';
+  if (timeEl) timeEl.textContent = '60';
+
+  // force-show game screen with inline styles
+  const home = document.getElementById('screen-home');
+  const game = document.getElementById('screen-game');
+  if (home) { home.classList.remove('active'); home.style.display = 'none'; home.style.visibility = 'hidden'; }
+  if (game) { game.classList.add('active'); game.style.display = 'block'; game.style.visibility = 'visible'; game.style.zIndex = '2'; }
+
+  // Initialize the game board after render
+  const board = document.getElementById('board');
+  if (board) {
+    board.style.minWidth = '200px';
+    board.style.minHeight = '200px';
+    board.style.backgroundImage = 'repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px), repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px)';
+    board.style.outline = '2px solid rgba(255,255,255,.25)';
+    board.style.borderRadius = '12px';
+
+    // Proceed with building the board
+    cells = [];
+    types = new Array(W * W);
+    resolving = false;
+
+    buildBoard(board);
+    fitBoard();
+    startTimer();  // Start the game timer
+    console.log("[Game] Board initialized, starting the game!");
+  } else {
+    console.error("[Game] Error: No game board element found.");
+  }
+}
 
   // ========== Farcaster Wallet Connect ==========
 
