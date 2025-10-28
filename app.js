@@ -168,33 +168,41 @@ async function ensureConnected() {
 }
 
 // mandatory entry transaction
-// async function sendMandatoryTx() {
-//   const addr = await ensureConnected();
-//   const provider = await getProvider();
+async function sendMandatoryTx() {
+  const addr = await ensureConnected();
+  const provider = await getProvider();
 
-//   // ensure Base
-//   try {
-//     const chain = await provider.request({ method: 'eth_chainId' });
-//     if (chain !== BASE_CHAIN_ID_HEX) {
-//       await provider.request({
-//         method: 'wallet_switchEthereumChain',
-//         params: [{ chainId: BASE_CHAIN_ID_HEX }],
-//       });
-//     }
-//   } catch {}
+  // ensure Base
+  try {
+    const chain = await provider.request({ method: 'eth_chainId' });
+    if (chain !== BASE_CHAIN_ID_HEX) {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      });
+    }
+  } catch (err) {
+    console.error("Error switching chain:", err);
+  }
 
-//   const tx = {
-//     from: addr,
-//     to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',
-//     value: '0x9184e72a000', // 0.00001 ETH in wei
-//   };
+  const tx = {
+    from: addr,
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Your target address
+    value: '0x9184e72a000', // 0.00001 ETH in wei
+  };
 
-//   const hash = await provider.request({
-//     method: 'eth_sendTransaction',
-//     params: [tx],
-//   });
-//   return hash;
-// }
+  try {
+    const hash = await provider.request({
+      method: 'eth_sendTransaction',
+      params: [tx],
+    });
+    console.log("Transaction hash:", hash);
+    return hash;
+  } catch (err) {
+    console.error("Transaction failed:", err);
+    throw new Error("Transaction failed");
+  }
+}
 
 /* buttons */
 document.getElementById('btn-connect')?.addEventListener('click', async () => {
@@ -210,7 +218,7 @@ document.getElementById('btn-play')?.addEventListener('click', async (e) => {
     const inMini = !!(window.sdk && window.sdk.wallet);
     if (inMini) {
       await ensureConnected();
-      // await sendMandatoryTx();
+      await sendMandatoryTx();
       await preload(ASSETS);
       startGame();
     } else {
@@ -630,18 +638,30 @@ function showEndGamePopup(score) {
   const popup = document.getElementById('end-game-popup');
   popup.style.display = 'flex';  // Ensure it's visible
 
-  // Play Again button functionality
-  document.getElementById('play-again-btn').addEventListener('click', () => {
-    popup.style.display = 'none';
-    startGame();  // Restart the game
+  // Play Again button functionality (trigger transaction first)
+  document.getElementById('play-again-btn').addEventListener('click', async () => {
+    popup.style.display = 'none'; // Close the game over popup
+    
+    try {
+      // Trigger transaction
+      await sendMandatoryTx();  // Execute your transaction function (ensure it's available)
+      console.log('Transaction successful!');
+
+      // Now, restart the game after transaction
+      startGame(); // Proceed to start the game after the transaction
+    } catch (err) {
+      console.error('Transaction failed:', err);
+      alert('Transaction failed. Please try again.');
+    }
   });
+}
 
 // Share button functionality (sync-safe)
 const shareBtn = document.getElementById('share-btn');
 
 shareBtn.onclick = async () => {
   const shareText = `I just scored ${score} points in Candy Crush Mini!`;
-  const shareUrl = 'https://candycrush-liard.vercel.app'; // The URL you're sharing
+  const shareUrl = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush'; // The URL you're sharing
 
   try {
     // Attempt to copy the content to clipboard first
@@ -680,9 +700,6 @@ function showCustomModal(message) {
     document.body.removeChild(modal);
   });
 }
-}
-
-
 
 
 
