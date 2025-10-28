@@ -569,28 +569,31 @@ function startGame() {
   });
 }
 
-async function endGame(){
+async function endGame() {
   stopTimer();
-  const name = localStorage.getItem("cc_name") || "guest";
+
+  const name = localStorage.getItem('cc_name') || 'guest';
+  const scoreValue = score; // your current score variable
 
   try {
-    if (window.sdk?.wallet?.getEthereumProvider) {
-      await submitScoreRemote(name, score); // signed submit when inside Farcaster
-    } else {
-      // dev browser fallback so it still shows something
-      const list = loadScores();
-      list.push({ name, score, ts: Date.now() });
-      list.sort((a,b) => b.score - a.score || a.ts - b.ts);
-      saveScores(list);
-    }
-  } catch (e) {
-    console.error("[score] submit failed", e);
+    // send score to global leaderboard API
+    const res = await fetch('https://candycrush-liard.vercel.app/api/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, score: scoreValue })
+    });
+    const json = await res.json();
+    console.log('[submit]', json);
+  } catch (err) {
+    console.error('[submit error]', err);
   }
 
+  // reload leaderboard from API after submitting
   await renderLeaderboard();
-  showScreen("home");
-  document.getElementById("leader-modal")?.classList.add("show");
+  showScreen('home');
+  document.getElementById('leader-modal')?.classList.add('show');
 }
+
 
 
 /* boot to home */
