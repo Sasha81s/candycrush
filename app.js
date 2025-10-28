@@ -595,11 +595,11 @@ async function endGame() {
     console.warn('[debug] Error fetching Farcaster identity:', err);
   }
 
-  // display the name as Farcaster ID or wallet address
+  // pick display name
   if (fid) name = 'fid' + fid;
   else if (addr) name = addr.slice(0, 6) + '…' + addr.slice(-4);
 
-  // prepare payload to submit
+  // prepare payload
   const body = { name, score: scoreValue, addr, fid };
 
   try {
@@ -609,17 +609,15 @@ async function endGame() {
       body: JSON.stringify(body)
     });
     const json = await res.json();
-    console.log('[debug] Score submission response:', json);
+    console.log('[submit]', json);
   } catch (err) {
-    console.error('[debug] Error submitting score:', err);
+    console.error('[submit error]', err);
   }
 
   await renderLeaderboard();
   showScreen('home');
   document.getElementById('leader-modal')?.classList.add('show');
 }
-
-
 
 
 
