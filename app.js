@@ -11,139 +11,143 @@ function showScreen(name) {
   const home = document.getElementById('screen-home');
   const game = document.getElementById('screen-game');
 
+  // always hide modal
   modals.leader?.classList.remove('show');
-modals.leader?.setAttribute('hidden', '');
+  modals.leader?.setAttribute('hidden', '');
 
   // hide both
   home?.classList.remove('active');
   game?.classList.remove('active');
 
-  // show the requested one
+  // show requested
   (name === 'game' ? game : home)?.classList.add('active');
 
   // housekeeping
   if (name === 'home') stopTimer();
 }
 
-
 document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
 document.getElementById('btn-leader').addEventListener('click', () => {
   renderLeaderboard();
-  modals.leader.removeAttribute('hidden');
-  modals.leader.classList.add('show');
+  modals.leader?.removeAttribute('hidden');
+  modals.leader?.classList.add('show');
 });
-
 document.getElementById('btn-close-leader').addEventListener('click', () => {
-  modals.leader.classList.remove('show');
-  modals.leader.setAttribute('hidden', '');
+  modals.leader?.classList.remove('show');
+  modals.leader?.setAttribute('hidden', '');
 });
 
-
 /* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
-/* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
-const BASE_CHAIN_ID_HEX = '0x2105' // Base mainnet
-let connectedAddr = null
-let ethProvider = null
+const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
+let connectedAddr = null;
+let ethProvider = null;
 
 async function getProvider() {
-  if (ethProvider) return ethProvider
+  if (ethProvider) return ethProvider;
   if (!window.sdk || !window.sdk.wallet || typeof window.sdk.wallet.getEthereumProvider !== 'function') {
-    throw new Error('not-in-miniapp')
+    throw new Error('not-in-miniapp');
   }
-  ethProvider = await window.sdk.wallet.getEthereumProvider()
-  return ethProvider
+  ethProvider = await window.sdk.wallet.getEthereumProvider();
+  return ethProvider;
 }
 
 async function ensureBaseChain(provider) {
   try {
-    const current = await provider.request({ method: 'eth_chainId' })
+    const current = await provider.request({ method: 'eth_chainId' });
     if (current !== BASE_CHAIN_ID_HEX) {
       await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: BASE_CHAIN_ID_HEX }],
-      })
+      });
     }
-  } catch (e) {
-    // ignore, host may auto-pin to Base
+  } catch {
+    // host may already be on Base
   }
 }
 
 async function connectFarcasterWallet() {
   try {
-    const provider = await getProvider()
-    // request account
-    const accounts = await provider.request({ method: 'eth_requestAccounts' })
-    connectedAddr = accounts?.[0] || null
-    await ensureBaseChain(provider)
+    const provider = await getProvider();
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    connectedAddr = accounts?.[0] || null;
+    await ensureBaseChain(provider);
 
-    // update UI
-    const pill = document.getElementById('addr-pill')
+    const pill = document.getElementById('addr-pill');
     if (pill && connectedAddr) {
-      pill.style.display = 'block'
-      pill.textContent = `connected: ${connectedAddr.slice(0, 6)}…${connectedAddr.slice(-4)}`
+      pill.style.display = 'block';
+      pill.textContent = `connected: ${connectedAddr.slice(0, 6)}…${connectedAddr.slice(-4)}`;
     }
-    const btn = document.getElementById('btn-connect')
+    const btn = document.getElementById('btn-connect');
     if (btn) {
-      btn.textContent = 'connected'
-      btn.classList.add('connected')
-      btn.disabled = true
+      btn.textContent = 'connected';
+      btn.classList.add('connected');
+      btn.disabled = true;
     }
-    return connectedAddr
+    return connectedAddr;
   } catch (err) {
-    console.error('wallet connect failed', err)
-    alert('open this inside Farcaster to connect the wallet')
-    throw err
+    console.error('wallet connect failed', err);
+    alert('open this inside Farcaster to connect the wallet');
+    throw err;
   }
 }
 
 async function ensureConnected() {
-  if (connectedAddr) return connectedAddr
-  return connectFarcasterWallet()
+  if (connectedAddr) return connectedAddr;
+  return connectFarcasterWallet();
 }
 
-// mandatory entry transaction: send 0.00001 ETH to self on Base
+// mandatory entry transaction
 async function sendMandatoryTx() {
-  const addr = await ensureConnected()
-  const provider = await getProvider()
+  const addr = await ensureConnected();
+  const provider = await getProvider();
+
+  // ensure Base
+  try {
+    const chain = await provider.request({ method: 'eth_chainId' });
+    if (chain !== BASE_CHAIN_ID_HEX) {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: BASE_CHAIN_ID_HEX }],
+      });
+    }
+  } catch {}
+
   const tx = {
     from: addr,
-    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',                     // self transfer
-value: '0x9184e72a000',    // 0.00001 ETH (1e13 wei)
-  }
-  // chain is ensured in connect step
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C',
+    value: '0x9184e72a000', // 0.00001 ETH in wei
+  };
+
   const hash = await provider.request({
     method: 'eth_sendTransaction',
     params: [tx],
-  })
-  return hash
+  });
+  return hash;
 }
 
 /* buttons */
 document.getElementById('btn-connect')?.addEventListener('click', async () => {
-  try { await connectFarcasterWallet() } catch {}
-})
+  try { await connectFarcasterWallet(); } catch {}
+});
 
 document.getElementById('btn-play')?.addEventListener('click', async (e) => {
-  const btn = e.currentTarget; btn.disabled = true
+  const btn = e.currentTarget; btn.disabled = true;
   try {
-    const inMini = !!(window.sdk && window.sdk.wallet)
+    const inMini = !!(window.sdk && window.sdk.wallet);
     if (inMini) {
-      await ensureConnected()
-      await sendMandatoryTx()
-      startGame()
+      await ensureConnected();
+      await sendMandatoryTx();
+      startGame();
     } else {
-      startGame() // dev mode outside Farcaster
+      startGame(); // dev mode outside Farcaster
     }
   } catch (err) {
-    console.error(err)
-    alert('transaction required to start')
+    console.error(err);
+    alert('transaction required to start');
   } finally {
-    btn.disabled = false
+    btn.disabled = false;
   }
-})
-
-
-
+});
 
 /* ======================= leaderboard ======================= */
 const KEY = 'cc_scores_v1';
@@ -167,7 +171,6 @@ function renderLeaderboard() {
 }
 
 /* ======================= game core ======================= */
-// remove native drag ghost
 document.addEventListener('dragstart', e => e.preventDefault());
 
 const W = 8;
@@ -229,7 +232,7 @@ function createsLine(r, c, t) {
   while (rr < W && types[id(rr, c)] === t) { cnt++; rr++; }
   return cnt >= 3;
 }
-function rollTypeSafe(r, c) { let t; do { t = randomType() } while (createsLine(r, c, t)); return t; }
+function rollTypeSafe(r, c) { let t; do { t = randomType(); } while (createsLine(r, c, t)); return t; }
 
 function buildBoard(boardEl) {
   cells = []; types.fill(0);
@@ -405,7 +408,7 @@ function startGame() {
   if (scoreEl) scoreEl.textContent = '0';
   if (timeEl) timeEl.textContent = '60';
 
-  // show game first so layout exists
+  // flip to game first so layout exists
   showScreen('game');
 
   // build after paint
@@ -413,7 +416,6 @@ function startGame() {
   requestAnimationFrame(() => {
     setTimeout(() => {
       if (!board) { console.error('[mini] no #board'); return; }
-      // ensure fresh state
       cells = [];
       types = new Array(W * W);
       resolving = false;
@@ -425,9 +427,6 @@ function startGame() {
     }, 0);
   });
 }
-
-
-
 
 function endGame(){
   stopTimer();
@@ -441,5 +440,5 @@ function endGame(){
 /* boot to home */
 showScreen('home');
 
-// safety: if we’re inside a Mini App and ready wasn’t called yet, call it now
-setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0)
+// safety
+setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);
