@@ -644,17 +644,48 @@ function showEndGamePopup(score) {
     
     try {
       // Trigger transaction
-      await sendMandatoryTx();  // Execute your transaction function (ensure it's available)
-      console.log('Transaction successful!');
+      const txHash = await sendMandatoryTx();  // Execute your transaction function (ensure it's available)
+      console.log('Transaction initiated:', txHash);
 
-      // Now, restart the game after transaction
+      // Wait for the transaction to be mined (confirmed)
+      await waitForTransactionConfirmation(txHash);
+
+      console.log('Transaction successful! Now restarting the game.');
+
+      // Now, restart the game after the transaction
       startGame(); // Proceed to start the game after the transaction
     } catch (err) {
-      console.error('Transaction failed:', err);
-      alert('Transaction failed. Please try again.');
+      console.error('Transaction failed or canceled:', err);
+      alert('Transaction failed or canceled. Please try again.');
     }
   });
 }
+
+// Wait for the transaction to be confirmed
+async function waitForTransactionConfirmation(txHash) {
+  const provider = await getProvider();
+  return new Promise((resolve, reject) => {
+    const checkTransaction = async () => {
+      try {
+        const receipt = await provider.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txHash],
+        });
+        if (receipt && receipt.blockNumber) {
+          // Transaction is confirmed
+          resolve(receipt);
+        } else {
+          // Transaction is still pending, retry after a short delay
+          setTimeout(checkTransaction, 2000); // Check every 2 seconds
+        }
+      } catch (err) {
+        reject('Error checking transaction receipt: ' + err.message);
+      }
+    };
+    checkTransaction();
+  });
+}
+
 
 // Share button functionality (sync-safe)
 const shareBtn = document.getElementById('share-btn');
