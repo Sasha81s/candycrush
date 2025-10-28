@@ -41,7 +41,6 @@ document.getElementById('btn-close-leader').addEventListener('click', () => {
 const BASE_CHAIN_ID_HEX = '0x2105'; // Base mainnet
 let connectedAddr = null;
 let ethProvider = null;
-let providerEventsBound = false;
 
 async function getProvider() {
   if (ethProvider) return ethProvider;
@@ -49,40 +48,6 @@ async function getProvider() {
     throw new Error('not-in-miniapp');
   }
   ethProvider = await window.sdk.wallet.getEthereumProvider();
-
-  // bind once
-  if (!providerEventsBound && ethProvider) {
-    providerEventsBound = true;
-
-    ethProvider.on?.('accountsChanged', (acc) => {
-      connectedAddr = acc?.[0] || null;
-      const pill = document.getElementById('addr-pill');
-      const btn = document.getElementById('btn-connect');
-      if (!connectedAddr) {
-        if (pill?.style) pill.style.display = 'none';
-        if (btn) {
-          btn.textContent = 'connect';
-          btn.classList.remove('connected');
-          btn.disabled = false;
-        }
-      } else {
-        if (pill?.style) pill.style.display = 'block';
-        if (pill) pill.textContent = `connected: ${connectedAddr.slice(0, 6)}…${connectedAddr.slice(-4)}`;
-      }
-    });
-
-    ethProvider.on?.('chainChanged', async (hex) => {
-      if (hex !== BASE_CHAIN_ID_HEX) {
-        try {
-          await ethProvider.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: BASE_CHAIN_ID_HEX }],
-          });
-        } catch {}
-      }
-    });
-  }
-
   return ethProvider;
 }
 
@@ -166,33 +131,27 @@ document.getElementById('btn-connect')?.addEventListener('click', async () => {
 });
 
 document.getElementById('btn-play')?.addEventListener('click', async (e) => {
-  const btn = e.currentTarget;
-  if (!btn) return;
-  btn.disabled = true;
-  btn.classList.add('loading');
+  const btn = e.currentTarget; btn.disabled = true;
   try {
     const inMini = !!(window.sdk && window.sdk.wallet);
     if (inMini) {
       await ensureConnected();
       await sendMandatoryTx();
-      await preload(ASSETS);
       startGame();
     } else {
-      await preload(ASSETS);
       startGame(); // dev mode outside Farcaster
     }
   } catch (err) {
     console.error(err);
     alert('transaction required to start');
   } finally {
-    btn.classList.remove('loading');
     btn.disabled = false;
   }
 });
 
 /* ======================= leaderboard ======================= */
 const KEY = 'cc_scores_v1';
-function loadScores() { try { return JSON.parse(localStorage.getItem(KEY) || '[]') ?? []; } catch { return []; } }
+function loadScores() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } }
 function saveScores(arr) { localStorage.setItem(KEY, JSON.stringify(arr.slice(0, 50))); }
 function submitScore(name, score) {
   const list = loadScores();
@@ -264,7 +223,7 @@ function createsLine(r, c, t) {
   let cnt = 1, cc = c - 1;
   while (cc >= 0 && types[id(r, cc)] === t) { cnt++; cc--; }
   cc = c + 1;
-  while (cc < W && types[id(r, c)] === t) { cnt++; cc++; }
+  while (cc < W && types[id(r, cc)] === t) { cnt++; cc++; }
   if (cnt >= 3) return true;
   // vertical
   cnt = 1; let rr = r - 1;
@@ -442,23 +401,6 @@ function enableSlideSwap(root, onSwap) {
   root.addEventListener('mouseleave', clearFx, { passive:true });
 }
 
-/* ======================= assets preload ======================= */
-const ASSETS = Array.from({ length: TYPES }, (_, i) => `img/color (${i + 1}).png`);
-async function preload(srcs) {
-  try {
-    await Promise.all(
-      srcs.map(
-        s =>
-          new Promise(res => {
-            const i = new Image();
-            i.src = s;
-            i.onload = i.onerror = res;
-          })
-      )
-    );
-  } catch {}
-}
-
 /* ======================= game flow ======================= */
 function startGame() {
   // reset
@@ -466,26 +408,14 @@ function startGame() {
   if (scoreEl) scoreEl.textContent = '0';
   if (timeEl) timeEl.textContent = '60';
 
-  // force-show game screen with inline styles
-  const home = document.getElementById('screen-home');
-  const game = document.getElementById('screen-game');
-  if (home) { home.classList.remove('active'); home.style.display = 'none'; home.style.visibility = 'hidden'; }
-  if (game) { game.classList.add('active'); game.style.display = 'block'; game.style.visibility = 'visible'; game.style.zIndex = '2'; }
+  // flip to game first so layout exists
+  showScreen('game');
 
   // build after paint
   const board = document.getElementById('board');
   requestAnimationFrame(() => {
     setTimeout(() => {
-      if (!board) { console.error('[mini] no #board'); alert('no #board element'); return; }
-
-      // diagnostic grid
-      board.style.minWidth = '200px';
-      board.style.minHeight = '200px';
-      board.style.backgroundImage = 'repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px), repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px)';
-      board.style.outline = '2px solid rgba(255,255,255,.25)';
-      board.style.borderRadius = '12px';
-
-      // ensure fresh state
+      if (!board) { console.error('[mini] no #board'); return; }
       cells = [];
       types = new Array(W * W);
       resolving = false;
@@ -493,11 +423,7 @@ function startGame() {
       buildBoard(board);
       fitBoard();
       startTimer();
-
       console.log('[mini] board built, cells:', board.children.length);
-      if (board.children.length !== 64) {
-        alert('board not filled: ' + board.children.length + ' cells');
-      }
     }, 0);
   });
 }
@@ -513,12 +439,6 @@ function endGame(){
 
 /* boot to home */
 showScreen('home');
-
-// ask player name once
-if (!localStorage.getItem('cc_name')) {
-  const n = prompt('enter your name for the leaderboard') || 'guest';
-  localStorage.setItem('cc_name', n.slice(0, 16));
-}
 
 // safety
 setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);
