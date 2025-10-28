@@ -57,8 +57,10 @@
 <script type="module">
   import { sdk } from 'https://esm.sh/@farcaster/miniapp-sdk'
   window.sdk = sdk
-  window.addEventListener('load', () => { try { sdk.actions.ready() } catch {} })
+  // call ready once the DOM is parsed, then one frame later (so layout exists)
+  window.addEventListener('DOMContentLoaded', () => {
+    requestAnimationFrame(() => { try { sdk.actions.ready() } catch {} })
+  })
 </script>
-<script src="./app.js"></script>
-  </body>
-</html>
+<script defer src="./app.js"></script>
+
