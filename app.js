@@ -636,45 +636,27 @@ function showEndGamePopup(score) {
     startGame();  // Restart the game
   });
 
-// Share button functionality (sync-safe)
-const shareBtn = document.getElementById('share-btn');
-shareBtn.onclick = () => {
-  const shareText = `I just scored ${score} points in Candy Crush Mini!`;
-  const shareUrl = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush';
-
+const handleShare = async () => {
   try {
-    // must be inside a direct click
-    if (navigator.share) {
-      navigator.share({
-        title: 'Candy Crush Mini',
-        text: shareText,
-        url: shareUrl,
-      })
-      .then(() => console.log('shared successfully'))
-      .catch(err => {
-        console.warn('share failed', err);
-        alert('Sharing was canceled or blocked.');
-      });
-    } else {
-      // fallback: copy to clipboard
-      navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
-        alert('Copied share link to clipboard!');
-      }).catch(() => {
-        prompt('Copy this to share:', `${shareText} ${shareUrl}`);
-      });
+    const url = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush'; // Replace with your actual Candy Crush game URL
+    const text = `I scored ${score} in Candy Crush! Can you beat me? 🍬💥`;
+
+    const result = await sdk.actions.composeCast({
+      text,
+      embeds: [url],         // Optional: you can also include links to images or videos
+    });
+
+    // If the user cancels the share, `result.cast` will be null.
+    if (!result?.cast) {
+      // Optional: Toast message for the canceled share
+      console.log("Share canceled");
     }
-  } catch (err) {
-    console.error('share error', err);
-    alert('Sharing not supported here. Link copied instead.');
+  } catch (e) {
+    console.warn('Share failed', e);
+    // Optional: Fallback if share fails – e.g., copy the URL to clipboard.
   }
 };
 }
-
-
-
-
-
-
 
 
 
