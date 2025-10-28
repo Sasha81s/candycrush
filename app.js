@@ -643,16 +643,16 @@ function showEndGamePopup(score) {
     popup.style.display = 'none'; // Close the game over popup
 
     try {
-      // Trigger transaction
+      // Trigger the transaction
       const txHash = await sendMandatoryTx();  // Execute your transaction function
-      console.log('Transaction initiated:', txHash);
 
-      // Wait for the transaction to be mined (confirmed)
+      // Wait for the transaction to be confirmed
       const receipt = await waitForTransactionConfirmation(txHash);
 
+      // Check if the transaction was successful
       if (receipt && receipt.status === '0x1') {
-        console.log('Transaction confirmed, now restarting the game.');
-        startGame(); // Restart the game after the transaction is confirmed
+        console.log('Transaction confirmed. Now restarting the game.');
+        startGame(); // Proceed to start the game after the transaction is confirmed
       } else {
         throw new Error('Transaction failed');
       }
@@ -662,6 +662,39 @@ function showEndGamePopup(score) {
     }
   });
 }
+
+// Wait for the transaction to be confirmed
+async function waitForTransactionConfirmation(txHash) {
+  const provider = await getProvider();
+
+  return new Promise((resolve, reject) => {
+    const checkTransaction = async () => {
+      try {
+        const receipt = await provider.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txHash],
+        });
+
+        if (receipt) {
+          if (receipt.blockNumber) {
+            // Transaction is confirmed
+            resolve(receipt);
+          } else {
+            // Transaction is still pending, retry after a short delay
+            setTimeout(checkTransaction, 2000); // Check every 2 seconds
+          }
+        } else {
+          reject('Transaction receipt not found');
+        }
+      } catch (err) {
+        reject('Error checking transaction receipt: ' + err.message);
+      }
+    };
+
+    checkTransaction();
+  });
+}
+
 
 // Wait for the transaction to be confirmed
 async function waitForTransactionConfirmation(txHash) {
