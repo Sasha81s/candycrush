@@ -243,6 +243,7 @@ async function renderLeaderboard() {
   ol.innerHTML = 'loading…';
 
   try {
+    // Fetch the updated leaderboard from the backend
     const r = await fetch('https://candycrush-liard.vercel.app/api/top');
     const data = await r.json();
 
@@ -266,6 +267,7 @@ async function renderLeaderboard() {
     ol.innerHTML = '<li>error loading leaderboard</li>';
   }
 }
+
 
 
 
@@ -606,11 +608,16 @@ async function endGame() {
     console.error('[submit error]', err);
   }
 
-  // Immediately refresh leaderboard after score is submitted
-  await renderLeaderboard();  // This fetches the latest leaderboard data
+  // Fetch leaderboard after submitting score to get the latest data
+  await renderLeaderboard();
   showScreen('home');
   document.getElementById('leader-modal')?.classList.add('show');
 }
+
+
+
+
+
 
 
 
