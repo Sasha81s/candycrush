@@ -639,6 +639,8 @@ function showEndGamePopup(score) {
   // Share button functionality
   document.getElementById('share-btn').addEventListener('click', () => {
     const shareText = `I just scored ${score} in the game! Play now: https://your-game-link.com`;
+    
+    // Check if the Web Share API is available
     if (navigator.share) {
       navigator.share({
         title: 'My Game Score',
@@ -646,8 +648,11 @@ function showEndGamePopup(score) {
         url: 'https://your-game-link.com',
       }).catch(console.error);
     } else {
-      // Fallback for browsers that do not support the Web Share API
-      prompt('Copy this to share:', shareText);
+      // Fallback for unsupported Web Share API: prompt the user to copy the text
+      const userInput = prompt('Copy this to share:', shareText);
+      if (userInput === null) {
+        console.error('User canceled the share prompt.');
+      }
     }
   });
 }
