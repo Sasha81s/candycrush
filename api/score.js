@@ -28,63 +28,33 @@ module.exports = async function handler(req, res) {
     const safeName = String(name || 'guest').slice(0, 32);
     const safeAddr = String(addr || '').toLowerCase();
     const safeFid = fid ? String(fid) : null;
-    const key = 'cc:global:scores';
 
     // Use fid or addr as unique ID
     const uniqueId = safeFid ? `fid:${safeFid}` : (safeAddr || `anon:${safeName}`);
+    const userKey = `user:${uniqueId}`;
 
     // Log for debugging
     console.log('[debug] uniqueId:', uniqueId, 'score:', safeScore);
 
-    // Get existing scores to check for updates
-    let existing = [];
-    try {
-      existing = await redis.zrange(key, 0, -1);
-      console.log('[debug] existing Redis entries:', existing);
-    } catch (err) {
-      console.error('[redis error]', err);
-      return res.status(500).json({ ok: false, err: 'failed to fetch from Redis' });
-    }
+    // Check the existing score for this user (if any)
+    const existingScore = await redis.hget(userKey, 'score');
+    const existingName = await redis.hget(userKey, 'name');
 
-    let old = null;
-    for (const r of existing) {
-      try {
-        const data = JSON.parse(r);
-        if (data.uid === uniqueId) {
-          old = data;
-          break;
-        }
-      } catch (parseError) {
-        console.error('[json parse error]', parseError);
-        continue;
-      }
-    }
-
-    // If there’s no existing score or if the new score is higher, update
-    if (!old || safeScore > (old.score || 0)) {
-      const entry = {
-        uid: uniqueId,
-        fid: safeFid,
-        addr: safeAddr,
-        name: safeName,
+    // If there's no existing score or the new score is higher, update
+    if (!existingScore || safeScore > Number(existingScore)) {
+      // Update the Redis hash with the new score and name
+      await redis.hmset(userKey, {
         score: safeScore,
-        ts: Date.now()
-      };
-
-      // Remove old entry if it exists
-      if (old) {
-        console.log('[debug] Removing old entry from Redis:', old);
-        await redis.zrem(key, JSON.stringify(old));
-      }
-
-      // Add or update the score in Redis (force overwrite)
-      await redis.zadd(key, { score: safeScore, member: JSON.stringify(entry) });
-      console.log('[debug] New entry added/updated:', entry);
+        name: safeName,
+        addr: safeAddr,
+        fid: safeFid,
+      });
+      console.log('[debug] Updated score for:', uniqueId);
     }
 
-    // Trim to top 100
-    const total = await redis.zcard(key);
-    if (total > 100) await redis.zremrangebyrank(key, 0, total - 101);
+    // Trim to top 100 (optional: if needed to limit)
+    const total = await redis.hlen('leaderboard');
+    if (total > 100) await redis.hdel('leaderboard', userKey);  // Optional trim
 
     res.json({ ok: true });
   } catch (e) {
