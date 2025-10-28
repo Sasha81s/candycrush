@@ -630,6 +630,9 @@ async function endGame() {
   showEndGamePopup(scoreValue);
 }
 
+// Flag to track transaction state
+let isTransactionPending = false;
+
 function showEndGamePopup(score) {
   // Display the score in the popup
   document.getElementById('final-score').textContent = score;
@@ -638,9 +641,13 @@ function showEndGamePopup(score) {
   const popup = document.getElementById('end-game-popup');
   popup.style.display = 'flex';  // Ensure it's visible
 
+  // Disable game controls until the transaction is confirmed
+  isTransactionPending = true;
+  disableGameControls();
+
   // Play Again button functionality (trigger transaction first)
   document.getElementById('play-again-btn').addEventListener('click', async () => {
-    popup.style.display = 'none'; // Close the game over popup
+    if (!isTransactionPending) return;  // Prevent further actions if transaction is in progress
 
     try {
       // Trigger the transaction
@@ -659,9 +666,60 @@ function showEndGamePopup(score) {
     } catch (err) {
       console.error('Transaction failed or canceled:', err);
       alert('Transaction failed or canceled. Please try again.');
+    } finally {
+      // Transaction is either successful or failed, now we can re-enable the game controls
+      isTransactionPending = false;
+      enableGameControls();
+      popup.style.display = 'none'; // Hide the popup after transaction confirmation
     }
   });
 }
+
+// Function to disable game controls during transaction
+function disableGameControls() {
+  const gameElements = document.querySelectorAll('.game-element');
+  gameElements.forEach(el => el.setAttribute('disabled', 'true'));
+  // Optionally, hide any other UI elements that shouldn't be interacted with during transaction
+}
+
+// Function to enable game controls after transaction confirmation
+function enableGameControls() {
+  const gameElements = document.querySelectorAll('.game-element');
+  gameElements.forEach(el => el.removeAttribute('disabled'));
+}
+
+// Wait for the transaction to be confirmed
+async function waitForTransactionConfirmation(txHash) {
+  const provider = await getProvider();
+
+  return new Promise((resolve, reject) => {
+    const checkTransaction = async () => {
+      try {
+        const receipt = await provider.request({
+          method: 'eth_getTransactionReceipt',
+          params: [txHash],
+        });
+
+        if (receipt) {
+          if (receipt.blockNumber) {
+            // Transaction is confirmed
+            resolve(receipt);
+          } else {
+            // Transaction is still pending, retry after a short delay
+            setTimeout(checkTransaction, 2000); // Check every 2 seconds
+          }
+        } else {
+          reject('Transaction receipt not found');
+        }
+      } catch (err) {
+        reject('Error checking transaction receipt: ' + err.message);
+      }
+    };
+
+    checkTransaction();
+  });
+}
+
 
 // Wait for the transaction to be confirmed
 async function waitForTransactionConfirmation(txHash) {
