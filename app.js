@@ -59,11 +59,15 @@ async function fetchTop(n = 10) {
 }
 
 document.getElementById('btn-exit').addEventListener('click', () => showScreen('home'));
-document.getElementById('btn-leader').addEventListener('click', () => {
-  renderLeaderboard();
+document.getElementById('btn-leader').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-leader');
+  if (btn) btn.disabled = true;
+  await renderLeaderboard();
   modals.leader?.removeAttribute('hidden');
   modals.leader?.classList.add('show');
+  if (btn) btn.disabled = false;
 });
+
 document.getElementById('btn-close-leader').addEventListener('click', () => {
   modals.leader?.classList.remove('show');
   modals.leader?.setAttribute('hidden', '');

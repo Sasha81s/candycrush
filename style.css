@@ -163,4 +163,56 @@ html, body{
     width:min(100vw, var(--w));
     height:min(100vh, var(--h));
   }
+
+  /* ===== leaderboard purple theme ===== */
+#leader-modal {
+  backdrop-filter: blur(6px);
+  background: rgba(26, 19, 33, 0.9);
+  border: 2px solid #8a5cff;
+  border-radius: 16px;
+  padding: 20px;
+  color: #f2eef6;
+  text-align: left;
+  box-shadow: 0 0 20px rgba(138, 92, 255, 0.4);
+}
+
+#leader-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: system-ui, 'Nunito', sans-serif;
+  font-size: 15px;
+}
+
+#leader-list li {
+  padding: 6px 10px;
+  background: rgba(47, 41, 53, 0.6);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+#leader-list li:hover {
+  background: rgba(138, 92, 255, 0.25);
+}
+
+#leader-list li:nth-child(1) {
+  background: linear-gradient(90deg, #bca3ff22, #8a5cff33);
+  border: 1px solid #bfa5ff55;
+  color: #dcd0ff;
+  font-weight: 700;
+}
+#leader-list li:nth-child(2) {
+  background: linear-gradient(90deg, #9a86ff22, #7e54ff33);
+  border: 1px solid #a88fff44;
+}
+#leader-list li:nth-child(3) {
+  background: linear-gradient(90deg, #835aff22, #6e45ff33);
+  border: 1px solid #966dff44;
+}
 }
