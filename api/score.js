@@ -34,12 +34,13 @@ module.exports = async function handler(req, res) {
     const uniqueId = safeFid ? `fid:${safeFid}` : (safeAddr || `anon:${safeName}`);
 
     // Log for debugging
-    console.log(`[debug] uniqueId: ${uniqueId}, score: ${safeScore}`);
+    console.log('[debug] uniqueId:', uniqueId, 'score:', safeScore);
 
-    // Get all existing scores to check for updates
+    // Get existing scores to check for updates
     let existing = [];
     try {
       existing = await redis.zrange(key, 0, -1);
+      console.log('[debug] existing Redis entries:', existing);
     } catch (err) {
       console.error('[redis error]', err);
       return res.status(500).json({ ok: false, err: 'failed to fetch from Redis' });
@@ -70,11 +71,15 @@ module.exports = async function handler(req, res) {
         ts: Date.now()
       };
 
+      // Remove old entry if it exists
+      if (old) {
+        console.log('[debug] Removing old entry from Redis:', old);
+        await redis.zrem(key, JSON.stringify(old));
+      }
+
       // Add or update the score in Redis (force overwrite)
       await redis.zadd(key, { score: safeScore, member: JSON.stringify(entry) });
-
-      // Log for debugging
-      console.log('[debug] Updated or added new entry:', entry);
+      console.log('[debug] New entry added/updated:', entry);
     }
 
     // Trim to top 100
