@@ -640,7 +640,7 @@ function showEndGamePopup(score) {
 const shareBtn = document.getElementById('share-btn');
 shareBtn.onclick = () => {
   const shareText = `I just scored ${score} points in Candy Crush Mini!`;
-  const shareUrl = 'https://candycrush-liard.vercel.app';
+  const shareUrl = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush';
 
   try {
     // must be inside a direct click
