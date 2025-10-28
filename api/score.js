@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Update only if higher score or new
+    // If there’s no existing score or if the new score is higher, update
     if (!old || safeScore > (old.score || 0)) {
       const entry = {
         uid: uniqueId,
@@ -66,6 +66,8 @@ module.exports = async function handler(req, res) {
         score: safeScore,
         ts: Date.now()
       };
+
+      // Add or update the score
       await redis.zadd(key, { score: safeScore, member: JSON.stringify(entry) });
     }
 
