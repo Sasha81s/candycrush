@@ -58,6 +58,10 @@ async function fetchTop(n = 10) {
   if (name === 'home') stopTimer();
 }
 
+document.getElementById('btn-close-leader').addEventListener('click', () => {
+  modals.leader?.classList.remove('show');
+  modals.leader?.setAttribute('hidden', '');
+});
 
 document.getElementById('btn-exit').addEventListener('click', () => {
   // Hide the end-game popup when the Exit button is clicked
@@ -66,11 +70,6 @@ document.getElementById('btn-exit').addEventListener('click', () => {
 
   // Switch to home screen
   showScreen('home');
-});
-
-document.getElementById('btn-close-leader').addEventListener('click', () => {
-  modals.leader?.classList.remove('show');
-  modals.leader?.setAttribute('hidden', '');
 });
 
 /* ========== farcaster mini-app connect + mandatory tx (no wagmi) ========== */
