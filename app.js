@@ -405,14 +405,19 @@ function startGame() {
   if (scoreEl) scoreEl.textContent = '0';
   if (timeEl) timeEl.textContent = '60';
 
-  // 1) flip to game first so layout exists
+  // show game first so layout exists
   showScreen('game');
 
-  // 2) build on next paint (and one more tick for safety)
+  // build after paint
   const board = document.getElementById('board');
   requestAnimationFrame(() => {
     setTimeout(() => {
-      if (!board) { console.error('no #board'); return; }
+      if (!board) { console.error('[mini] no #board'); return; }
+      // ensure fresh state
+      cells = [];
+      types = new Array(W * W);
+      resolving = false;
+
       buildBoard(board);
       fitBoard();
       startTimer();
@@ -420,6 +425,7 @@ function startGame() {
     }, 0);
   });
 }
+
 
 
 
