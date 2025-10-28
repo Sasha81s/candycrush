@@ -577,27 +577,29 @@ async function endGame() {
   let addr = null;
   let fid = null;
 
-  // try to read Farcaster identity if inside mini app
+  console.log('[debug] Checking Farcaster identity');
+
+  // try to fetch Farcaster ID and wallet address
   try {
     if (window.sdk?.user?.fid) {
       fid = window.sdk.user.fid;
-      console.log('[debug] Farcaster ID:', fid);  // log Farcaster ID
+      console.log('[debug] Farcaster ID (fid):', fid);
     }
     if (window.sdk?.wallet?.getEthereumProvider) {
       const provider = await window.sdk.wallet.getEthereumProvider();
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       addr = accounts?.[0] || null;
-      console.log('[debug] Wallet Address:', addr);  // log wallet address
+      console.log('[debug] Wallet address:', addr);
     }
   } catch (err) {
-    console.warn('[mini identity fetch failed]', err);
+    console.warn('[debug] Error fetching Farcaster identity:', err);
   }
 
-  // pick display name
+  // display the name as Farcaster ID or wallet address
   if (fid) name = 'fid' + fid;
   else if (addr) name = addr.slice(0, 6) + '…' + addr.slice(-4);
 
-  // prepare payload
+  // prepare payload to submit
   const body = { name, score: scoreValue, addr, fid };
 
   try {
@@ -607,15 +609,16 @@ async function endGame() {
       body: JSON.stringify(body)
     });
     const json = await res.json();
-    console.log('[submit]', json);
+    console.log('[debug] Score submission response:', json);
   } catch (err) {
-    console.error('[submit error]', err);
+    console.error('[debug] Error submitting score:', err);
   }
 
   await renderLeaderboard();
   showScreen('home');
   document.getElementById('leader-modal')?.classList.add('show');
 }
+
 
 
 
