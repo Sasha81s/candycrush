@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
     // Use fid or addr as unique ID
     const uniqueId = safeFid ? `fid:${safeFid}` : (safeAddr || `anon:${safeName}`);
 
-    // Get existing scores to check for updates
+    // Get all existing scores to check for updates
     let existing = [];
     try {
       existing = await redis.zrange(key, 0, -1);
