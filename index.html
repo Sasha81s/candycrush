@@ -9,30 +9,24 @@
   </head>
   <body>
     <div id="app">
-      <!-- ===== HOME (leave this exactly as-is) ===== -->
+      <!-- ===== HOME ===== -->
       <section id="screen-home" class="screen active">
         <header class="home-top">
           <button id="btn-connect" class="btn connect">connect wallet</button>
           <button id="btn-leader" class="btn">LEADERBOARD</button>
         </header>
-        
-<div class="home-center">
-  <img id="game-logo" src="./img/logo.png" alt="Game Logo" />
-  <h1 id="game-title">
-    CANDY CRUSH<br><span>MINI</span>
-  </h1>
-  <button id="btn-play" class="btn primary play-btn">PLAY</button>
-  <p id="addr-pill" class="addr-pill" style="display:none;"></p>
-</div>
 
-<div id="leader-modal" class="modal" hidden>
-  <div class="modal-card">
-    <h2>leaderboard</h2>
-    <ol id="leader-list" class="list"></ol>
-    <button id="btn-close-leader" class="btn primary">close</button>
-  </div>
-</div>
-      <!-- ===== GAME (don’t edit) ===== -->
+        <div class="home-center">
+          <img id="game-logo" src="./img/logo.png" alt="Game Logo" />
+          <h1 id="game-title">
+            CANDY CRUSH<br><span>MINI</span>
+          </h1>
+          <button id="btn-play" class="btn primary play-btn">PLAY</button>
+          <p id="addr-pill" class="addr-pill" style="display:none;"></p>
+        </div>
+      </section>
+
+      <!-- ===== GAME ===== -->
       <section id="screen-game" class="screen">
         <header class="hud">
           <div>score: <span id="score">0</span></div>
@@ -44,37 +38,34 @@
         </div>
       </section>
 
-<!-- ===== LEADERBOARD MODAL ===== -->
-<div id="leader-modal" class="modal" hidden>
-  <div class="modal-card">
-    <h2>leaderboard</h2>
-    <ol id="leader-list" class="list"></ol>
-    <button id="btn-close-leader" class="btn primary">close</button>
-  </div>
-</div>
+      <!-- ===== LEADERBOARD MODAL (single source of truth) ===== -->
+      <div id="leader-modal" class="modal" hidden>
+        <div class="modal-card">
+          <h2>leaderboard</h2>
+          <ol id="leader-list" class="list"></ol>
+          <button id="btn-close-leader" class="btn primary">close</button>
+        </div>
+      </div>
+    </div>
 
-
-<!-- scripts -->
-<script type="module">
-  (async () => {
-    // 1) load the SDK in a way Warpcast’s webview likes
-    let sdk;
-    try {
-      ({ sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk?bundle'));
-      window.sdk = sdk;
-    } catch (e) {
-      console.error('miniapp sdk import failed', e);
-    }
-
-    // 2) call ready only after the page is fully painted
-    const callReady = () => { try { window.sdk?.actions?.ready() } catch (e) { console.warn(e) } };
-
-    if (document.readyState === 'complete') {
-      requestAnimationFrame(callReady);
-    } else {
-      window.addEventListener('load', () => requestAnimationFrame(callReady), { once: true });
-    }
-  })();
-</script>
-<script defer src="./app.js?v=2"></script>
-
+    <!-- scripts -->
+    <script type="module">
+      (async () => {
+        try {
+          // reliable import for Warpcast webview
+          const { sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk?bundle');
+          window.sdk = sdk;
+          const callReady = () => { try { sdk.actions.ready() } catch {} };
+          if (document.readyState === 'complete') {
+            requestAnimationFrame(callReady);
+          } else {
+            window.addEventListener('load', () => requestAnimationFrame(callReady), { once: true });
+          }
+        } catch (e) {
+          console.error('[mini] sdk import failed', e);
+        }
+      })();
+    </script>
+    <script defer src="./app.js?v=3"></script>
+  </body>
+</html>

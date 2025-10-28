@@ -408,14 +408,26 @@ function startGame() {
   if (scoreEl) scoreEl.textContent = '0';
   if (timeEl) timeEl.textContent = '60';
 
-  // flip to game first so layout exists
-  showScreen('game');
+  // force-show game screen with inline styles (wins over any CSS)
+  const home = document.getElementById('screen-home');
+  const game = document.getElementById('screen-game');
+  if (home) { home.classList.remove('active'); home.style.display = 'none'; home.style.visibility = 'hidden'; }
+  if (game) { game.classList.add('active'); game.style.display = 'block'; game.style.visibility = 'visible'; game.style.zIndex = '2'; }
 
   // build after paint
   const board = document.getElementById('board');
   requestAnimationFrame(() => {
     setTimeout(() => {
-      if (!board) { console.error('[mini] no #board'); return; }
+      if (!board) { console.error('[mini] no #board'); alert('no #board element'); return; }
+
+      // VISUAL DIAGNOSTIC: draw a placeholder grid background so you see something even if images fail
+      board.style.minWidth = '200px';
+      board.style.minHeight = '200px';
+      board.style.backgroundImage = 'repeating-linear-gradient(0deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px), repeating-linear-gradient(90deg, rgba(255,255,255,.08) 0 1px, transparent 1px 48px)';
+      board.style.outline = '2px solid rgba(255,255,255,.25)';
+      board.style.borderRadius = '12px';
+
+      // ensure fresh state
       cells = [];
       types = new Array(W * W);
       resolving = false;
@@ -423,10 +435,15 @@ function startGame() {
       buildBoard(board);
       fitBoard();
       startTimer();
+
       console.log('[mini] board built, cells:', board.children.length);
+      if (board.children.length !== 64) {
+        alert('board not filled: ' + board.children.length + ' cells');
+      }
     }, 0);
   });
 }
+
 
 function endGame(){
   stopTimer();
