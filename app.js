@@ -643,30 +643,14 @@ shareBtn.onclick = async () => {
   const shareText = `I just scored ${score} points in Candy Crush Mini!`;
   const shareUrl = 'https://candycrush-liard.vercel.app'; // The URL you're sharing
 
-  // Check if Web Share API is available
-  if (navigator.share) {
-    try {
-      // Attempt to share the content using Web Share API
-      await navigator.share({
-        title: 'Candy Crush Mini',
-        text: shareText,
-        url: shareUrl,
-      });
-      console.log('Share successful!');
-    } catch (err) {
-      console.error('Share failed:', err);
-      showCustomModal('Sharing failed. Please try again.');
-    }
-  } else {
-    console.log('Web Share API not supported in this environment.');
-    // Fallback to copying to clipboard if Web Share API is not available
-    try {
-      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      showCustomModal('Link copied to clipboard! You can now share it anywhere.');
-    } catch (err) {
-      console.error('Clipboard copy failed:', err);
-      showCustomModal('Failed to copy to clipboard. Please try again.');
-    }
+  try {
+    // Attempt to copy the content to clipboard first
+    await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+    showCustomModal('Link copied to clipboard! You can now share it anywhere.');
+  } catch (err) {
+    console.error('Clipboard copy failed', err);
+    // If copying fails, show a fallback modal
+    showCustomModal(`Failed to copy to clipboard. You can manually share: ${shareText} ${shareUrl}`);
   }
 };
 
