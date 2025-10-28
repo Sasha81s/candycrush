@@ -1,30 +1,3 @@
-import { sdk } from '@farcaster/miniapp-sdk';
-
-// Associate your game with Farcaster account
-if (window.sdk) {
-  sdk.actions.setAccountAssociation(accountAssociation);
-  console.log('Account associated with Farcaster');
-}
-
-async function postScoreToFarcaster(score) {
-  if (window.sdk) {
-    try {
-      // Example: You can create your score payload
-      const payload = {
-        score: score,
-        player: 'your-player-id',  // Replace with your Farcaster ID if needed
-        timestamp: Date.now(),
-      };
-
-      // Submit the score
-      const response = await sdk.actions.submitData(payload);
-      console.log('Score posted:', response);
-    } catch (err) {
-      console.error('Failed to post score to Farcaster', err);
-    }
-  }
-}
-
 /* ======================= UI state ======================= */
 const screens = {
   home: document.getElementById('screen-home'),
