@@ -584,6 +584,7 @@ async function endGame() {
   console.log('[debug] Checking Farcaster identity');
 
   
+  
   // try to fetch Farcaster ID and wallet address
   try {
     if (window.sdk?.user?.fid) {
