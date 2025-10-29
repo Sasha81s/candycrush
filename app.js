@@ -433,12 +433,6 @@ function clearMatches(set){
   return cleared;
 }
 
-
-
-
-
-
-
 function applyGravity() {
   for (let c = 0; c < W; c++) {
     let write = W - 1;
@@ -474,18 +468,6 @@ function applyGravity() {
   }
   renderAll();
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 function cascadeResolve(pre){
   resolving = true;
@@ -630,65 +612,6 @@ window.onload = () => {
     showAddMiniAppPopup(); // Show the popup if in a mini-app and not added
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-// Create a global variable for the audio
-let backgroundMusic = new Audio('music/background-music.mp3');
-backgroundMusic.loop = true; // Loop the music
-backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
-
-// Play the background music when the page loads (auto-play)
-window.onload = () => {
-  // Try to start the music automatically when the page loads
-  backgroundMusic.play().catch((error) => {
-    // If autoplay fails (browser restriction), set music to muted
-    console.log("Autoplay failed, muting the audio and awaiting user interaction...");
-    backgroundMusic.muted = true;
-    // Show a "Unmute" button or wait for any user interaction to unmute the music
-    document.getElementById('mute-btn').style.display = 'block'; // Display mute button if autoplay failed
-  });
-};
-
-// Mute the music
-let isMuted = false;
-
-document.getElementById('mute-btn').addEventListener('click', () => {
-  isMuted = !isMuted;
-  if (isMuted) {
-    backgroundMusic.pause(); // Pause the music if muted
-    document.getElementById('mute-btn').textContent = 'Unmute Music'; // Change button text
-  } else {
-    backgroundMusic.play(); // Play the music if unmuted
-    document.getElementById('mute-btn').textContent = 'Mute Music'; // Change button text
-  }
-});
-
-// Ensure music is stopped when game ends
-function endGame() {
-  // Your existing end game logic...
-  backgroundMusic.pause(); // Stop the music when the game ends
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* ======================= game flow ======================= */
 function startGame() {
@@ -896,6 +819,72 @@ async function sendMandatoryTx() {
     throw new Error("Transaction failed");
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 1. Create a global variable for the audio
+let isMuted = true; // Start with the music muted
+let backgroundMusic = new Audio('music/background-music.mp3');
+backgroundMusic.loop = true; // Loop the music
+backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
+
+// Initially mute the music
+backgroundMusic.muted = true;
+
+// 2. Mute button logic
+document.getElementById('mute-btn').addEventListener('click', () => {
+  isMuted = !isMuted;
+
+  if (isMuted) {
+    backgroundMusic.pause(); // Pause the music if muted
+    document.getElementById('mute-btn').textContent = 'Unmute Music'; // Change button text
+  } else {
+    // Ensure the music plays when unmuted, handling the autoplay issue
+    backgroundMusic.play().catch((error) => {
+      console.log("Autoplay failed, waiting for user interaction...");
+      backgroundMusic.muted = true;
+    });
+    document.getElementById('mute-btn').textContent = 'Mute Music'; // Change button text
+  }
+});
+
+// 3. Display mute button immediately when the page loads
+window.onload = () => {
+  // Show the mute button immediately, waiting for the first click
+  document.getElementById('mute-btn').style.display = 'block';
+
+  // Attempt to play music (autoplay is blocked initially)
+  backgroundMusic.play().catch((error) => {
+    console.log("Autoplay failed due to browser restrictions. Waiting for user click.");
+    backgroundMusic.muted = true; // Mute the music until user interaction
+  });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Share button functionality (sync-safe)
 const shareBtn = document.getElementById('share-btn');
