@@ -582,6 +582,7 @@ async function preload(srcs) {
 
 // Ensure the Farcaster SDK is available
 const LS_KEY = 'candycrush:addMiniAppPrompt:added';
+
 let open = false;
 let busy = false;
 
@@ -597,33 +598,21 @@ function hideAddMiniAppPopup() {
   popup.style.display = 'none';
 }
 
-// Check the conditions when the page loads
-window.onload = () => {
-  let ignore = false;
+// Check if the game has already been added and show the popup if needed
+async function checkIfGameAdded() {
+  try {
+    const inMini = window.sdk && (await window.sdk.isInMiniApp()) === true;
+    const added = localStorage.getItem(LS_KEY) === 'yes';
 
-  // Check if the game is already added
-  async function checkIfGameAdded() {
-    try {
-      const inMini = window.sdk && (await window.sdk.isInMiniApp()) === true;
-      const added = localStorage.getItem(LS_KEY) === 'yes';
-      
-      if (!ignore && inMini && !added) {
-        open = true;
-        showAddMiniAppPopup();
-      }
-    } catch (error) {
-      console.error('Error checking Farcaster:', error);
+    // Show popup if in a mini-app and game hasn't been added yet
+    if (inMini && !added) {
+      open = true;
+      showAddMiniAppPopup();
     }
+  } catch (error) {
+    console.error('Error checking Farcaster:', error);
   }
-
-  // Initialize check on load
-  checkIfGameAdded();
-
-  // Cleanup
-  return () => {
-    ignore = true;
-  };
-};
+}
 
 // Handle Confirm Button Click (user confirms adding the game)
 document.getElementById('confirm-btn').addEventListener('click', async () => {
@@ -632,7 +621,7 @@ document.getElementById('confirm-btn').addEventListener('click', async () => {
     document.getElementById('confirm-btn').textContent = 'Working…'; // Show working state
     await window.sdk.actions.addMiniApp(); // Ask to add to Farcaster
 
-    // Mark as added only after the user confirmed the add flow
+    // Only after successfully adding the game, mark it as added in localStorage
     localStorage.setItem(LS_KEY, 'yes');
     console.log("Game successfully added to Farcaster.");
 
@@ -652,6 +641,20 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
   // Just close for now, no flag, so it will appear next launch
   hideAddMiniAppPopup();
 });
+
+// Show the popup when the game starts (or on page load)
+window.onload = () => {
+  let ignore = false;
+
+  // Initialize check on load
+  checkIfGameAdded();
+
+  // Cleanup
+  return () => {
+    ignore = true;
+  };
+};
+
 
 
 
