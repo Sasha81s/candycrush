@@ -295,12 +295,6 @@ button:hover {
 
 
 
-
-
-
-
-
-
 /* Style for the overlay */
 .favorite-overlay {
   position: fixed;
@@ -339,6 +333,12 @@ button:hover {
 .overlay-content button:hover {
   background-color: #7a4ac9;
 }
+
+
+
+
+
+
 
 
 

@@ -27,6 +27,63 @@ async function signScore(score) {
   return { addr, ts, sig };
 }
 
+
+
+
+
+
+
+
+
+
+
+
+// Show overlay at game start
+function showFavoritePrompt() {
+  const overlay = document.createElement('div');
+  overlay.classList.add('favorite-overlay');
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      <p>💜 Add "Candy Crush" to your favorites!</p>
+      <button id="add-to-favorites">Add to Favorites</button>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  // Close overlay when button is clicked
+  document.getElementById('add-to-favorites').addEventListener('click', () => {
+    // Trigger Farcaster Mini notification API
+    if (window.sdk && window.sdk.actions) {
+      window.sdk.actions.favoriteApp('candy-crush').catch(console.error);
+    }
+
+    // Close the overlay after adding to favorites
+    overlay.style.display = 'none';
+  });
+}
+
+// Call the function when the game starts
+useEffect(() => {
+  showFavoritePrompt();
+}, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ===== remote submit + fetch ===== */
 async function submitScoreRemote(name, score) {
   const { addr, ts, sig } = await signScore(score);
@@ -324,56 +381,6 @@ function startTimer() {
   }, 1000);
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
-
-
-
-
-
-
-// Show overlay at game start
-function showFavoritePrompt() {
-  const overlay = document.createElement('div');
-  overlay.classList.add('favorite-overlay');
-  overlay.innerHTML = `
-    <div class="overlay-content">
-      <p>💜 Add "HYPER RUN" to your favorites!</p>
-      <button id="add-to-favorites">Add to Favorites</button>
-    </div>
-  `;
-  
-  document.body.appendChild(overlay);
-  
-  // Close overlay when button is clicked
-  document.getElementById('add-to-favorites').addEventListener('click', () => {
-    // Trigger Farcaster Mini notification API
-    if (window.sdk && window.sdk.actions) {
-      window.sdk.actions.favoriteApp('hyper-run').catch(console.error);
-    }
-
-    // Close the overlay after adding to favorites
-    overlay.style.display = 'none';
-  });
-}
-
-// Call the function when the game starts
-useEffect(() => {
-  showFavoritePrompt();
-}, []);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
