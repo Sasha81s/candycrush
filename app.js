@@ -592,9 +592,14 @@ document.getElementById('confirm-btn').addEventListener('click', async () => {
 // Add to Farcaster mini-app (using Farcaster SDK)
 async function addToFarcasterMiniApp() {
   try {
+    if (!window.sdk) {
+      console.error('Farcaster SDK is not loaded.');
+      return;
+    }
+
     // Assuming window.sdk has a method to add the app
-    if (window.sdk && window.sdk.miniapp && window.sdk.miniapp.add) {
-      const result = await window.sdk.miniapp.add(); // Example method, check Farcaster docs
+    if (window.sdk.miniapp && window.sdk.miniapp.add) {
+      const result = await window.sdk.miniapp.add(); // Method from Farcaster SDK
       console.log("Mini App added to Farcaster:", result);
     } else {
       console.error("Farcaster SDK or method is not available");
@@ -607,9 +612,14 @@ async function addToFarcasterMiniApp() {
 // Enable notifications (using Farcaster SDK)
 async function enableFarcasterNotifications() {
   try {
+    if (!window.sdk) {
+      console.error('Farcaster SDK is not loaded.');
+      return;
+    }
+
     // Assuming window.sdk has a method to enable notifications
-    if (window.sdk && window.sdk.notifications && window.sdk.notifications.enable) {
-      const result = await window.sdk.notifications.enable(); // Example method, check Farcaster docs
+    if (window.sdk.notifications && window.sdk.notifications.enable) {
+      const result = await window.sdk.notifications.enable(); // Method from Farcaster SDK
       console.log("Notifications enabled:", result);
     } else {
       console.error("Farcaster SDK or method is not available");
@@ -619,9 +629,9 @@ async function enableFarcasterNotifications() {
   }
 }
 
-
 // Show the popup when the game starts
 window.onload = showAddMiniAppPopup;  // Ensure popup shows as soon as the page loads
+
 
 
 
