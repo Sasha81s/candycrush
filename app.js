@@ -632,26 +632,19 @@ window.onload = () => {
 };
 
 
+
+
+
 // Create a global variable for the audio
+let isMuted = false;
 let backgroundMusic = new Audio('music/background-music.mp3');
 backgroundMusic.loop = true; // Loop the music
 backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
 
-// Play the background music when the page loads (auto-play)
-window.onload = () => {
-  // Try to start the music automatically when the page loads
-  backgroundMusic.play().catch((error) => {
-    // If autoplay fails (browser restriction), set music to muted
-    console.log("Autoplay failed, muting the audio and awaiting user interaction...");
-    backgroundMusic.muted = true;
-    // Show a "Unmute" button or wait for any user interaction to unmute the music
-    document.getElementById('mute-btn').style.display = 'block'; // Display mute button if autoplay failed
-  });
-};
+// Initially mute the music
+backgroundMusic.muted = true;
 
-// Mute the music
-let isMuted = false;
-
+// Mute button logic
 document.getElementById('mute-btn').addEventListener('click', () => {
   isMuted = !isMuted;
   if (isMuted) {
@@ -663,11 +656,14 @@ document.getElementById('mute-btn').addEventListener('click', () => {
   }
 });
 
-// Ensure music is stopped when game ends
-function endGame() {
-  // Your existing end game logic...
-  backgroundMusic.pause(); // Stop the music when the game ends
-}
+// Try to start the music when user interacts (clicks mute button)
+window.onload = () => {
+  // Show the mute button immediately, waiting for the first click
+  document.getElementById('mute-btn').style.display = 'block';
+};
+
+
+
 
 
 
