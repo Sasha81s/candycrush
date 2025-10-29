@@ -325,6 +325,51 @@ function startTimer() {
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
+
+
+
+// Function to show the popup at the start of the game
+function showAddMiniAppPopup() {
+  const popup = document.getElementById('add-mini-app-popup');
+  popup.style.visibility = 'visible';
+}
+
+// Hide the popup
+function hideAddMiniAppPopup() {
+  const popup = document.getElementById('add-mini-app-popup');
+  popup.style.visibility = 'hidden';
+}
+
+// Add event listeners for the buttons
+document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
+document.getElementById('confirm-btn').addEventListener('click', () => {
+  const addToFarcaster = document.getElementById('add-to-farcaster').checked;
+  const enableNotifications = document.getElementById('enable-notifications').checked;
+
+  if (addToFarcaster) {
+    console.log("Adding to Farcaster...");
+    // Add Farcaster logic here
+  }
+
+  if (enableNotifications) {
+    console.log("Enabling notifications...");
+    // Enable notifications logic here
+  }
+
+  hideAddMiniAppPopup(); // Hide popup after confirm
+});
+
+// Show the popup when the game starts
+window.onload = showAddMiniAppPopup;
+
+
+
+
+
+
+
+
+
 // board sizing
 function fitBoard() {
   const wrap = document.getElementById('game-root');

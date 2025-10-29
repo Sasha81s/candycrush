@@ -288,4 +288,78 @@ button:hover {
 }
 
 
+/* Overlay background */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden; /* Hidden by default */
+  z-index: 1000;
+}
+
+/* Popup content */
+.popup-content {
+  background: #241f28; /* Dark background similar to your screenshot */
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  text-align: center;
+  color: #fff;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.popup-logo {
+  width: 50px; /* Adjust logo size */
+  height: 50px;
+  margin-right: 10px;
+}
+
+.popup-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.popup-body {
+  margin-bottom: 20px;
+}
+
+.popup-actions label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.popup-btn {
+  background-color: #8a5cff; /* Purple button */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.popup-btn:hover {
+  background-color: #7a4ed2; /* Slightly darker on hover */
+}
+
+
+
+
 }
