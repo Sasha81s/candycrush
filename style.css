@@ -320,20 +320,4 @@ button:hover {
   transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
-
-/* Ensure mute button is visible */
-#mute-btn {
-  background-color: #8a5cff; 
-  color: white;
-  padding: 12px 20px;
-  font-size: 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  margin-top: 20px; /* Give it some space */
-  display: block;
-  text-align: center;
-}
-
-
-
 }
