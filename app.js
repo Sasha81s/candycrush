@@ -564,6 +564,8 @@ async function preload(srcs) {
 
 
 
+
+
 // Function to show the popup at the start of the game
 function showAddMiniAppPopup() {
   const popup = document.getElementById('add-mini-app-popup');
@@ -579,7 +581,7 @@ function hideAddMiniAppPopup() {
 // Add event listener for the Cancel button
 document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
 
-// Confirm button logic: when clicked, both actions will be triggered without checkboxes
+// Confirm button logic: when clicked, both actions will be triggered automatically
 document.getElementById('confirm-btn').addEventListener('click', async () => {
   console.log("Adding to Farcaster...");
   await addToFarcasterMiniApp(); // Add the mini-app
@@ -632,6 +634,7 @@ async function enableFarcasterNotifications() {
 
 // Show the popup when the game starts
 window.onload = showAddMiniAppPopup;  // Ensure popup shows as soon as the page loads
+
 
 
 
