@@ -81,25 +81,19 @@
 
 
 
+
     
 
-
-    <!-- Popup for adding the mini-app and enabling notifications -->
-<div id="add-mini-app-popup" class="popup-overlay">
-  <div class="popup-content">
-    <div class="popup-header">
-      <img src="path/to/logo.png" alt="Game Logo" class="popup-logo" />
-      <span class="popup-title">CandyCru</span>
-    </div>
-    <div class="popup-body">
-      <p>Add Mini App: CandyCrush</p>
-    </div>
-    <div class="popup-footer">
-      <button id="cancel-btn" class="popup-btn">Cancel</button>
-      <button id="confirm-btn" class="popup-btn">Confirm</button>
-    </div>
+    <div id="add-mini-app-popup" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: grid; place-items: center;">
+  <div style="background: #111218; padding: 20px; border-radius: 16px; color: white; width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);">
+    <h2>Add Mini App</h2>
+    <p>Would you like to add Candy Crush to Farcaster for quick access and notifications?</p>
+    <button id="cancel-btn">Cancel</button>
+    <button id="confirm-btn">Confirm</button>
   </div>
 </div>
+
+
 
 
 

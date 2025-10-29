@@ -566,74 +566,51 @@ async function preload(srcs) {
 
 
 
-// Function to show the popup at the start of the game
+// Ensure the Farcaster SDK is available
+const LS_KEY = 'candycrush:addMiniAppPrompt:added';
+
 function showAddMiniAppPopup() {
   const popup = document.getElementById('add-mini-app-popup');
-  popup.style.visibility = 'visible';
+  popup.style.display = 'grid';
 }
 
 // Hide the popup
 function hideAddMiniAppPopup() {
   const popup = document.getElementById('add-mini-app-popup');
-  popup.style.visibility = 'hidden';
+  popup.style.display = 'none';
 }
 
-// Add event listener for the Cancel button
 document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
 
-// Confirm button logic: when clicked, both actions will be triggered automatically
 document.getElementById('confirm-btn').addEventListener('click', async () => {
   console.log("Adding to Farcaster...");
-  await addToFarcasterMiniApp(); // Add the mini-app
+  try {
+    // Make sure the Farcaster SDK is loaded
+    if (!window.sdk) {
+      console.error("Farcaster SDK is not available.");
+      return;
+    }
 
-  console.log("Enabling notifications...");
-  await enableFarcasterNotifications(); // Enable notifications
+    await window.sdk.actions.addMiniApp(); // Add to Farcaster
+    localStorage.setItem(LS_KEY, 'yes'); // Save the flag to prevent re-asking
+    console.log("Mini app added to Farcaster.");
+  } catch (error) {
+    console.error("Error adding mini app to Farcaster:", error);
+  }
 
-  hideAddMiniAppPopup(); // Hide popup after confirm
+  hideAddMiniAppPopup(); // Hide the popup after confirming
 });
 
-// Add to Farcaster mini-app (using Farcaster SDK)
-async function addToFarcasterMiniApp() {
-  try {
-    if (!window.sdk) {
-      console.error('Farcaster SDK is not loaded.');
-      return;
-    }
+// Show the popup when the game starts (or on page load)
+window.onload = () => {
+  const inMiniApp = window.sdk && window.sdk.isInMiniApp ? window.sdk.isInMiniApp() : false;
+  const added = localStorage.getItem(LS_KEY) === 'yes';
 
-    // Check if Farcaster SDK has the method to add the mini-app
-    if (window.sdk.miniapp && window.sdk.miniapp.add) {
-      const result = await window.sdk.miniapp.add(); // Farcaster SDK method
-      console.log("Mini App added to Farcaster:", result);
-    } else {
-      console.error("Farcaster SDK or method is not available");
-    }
-  } catch (err) {
-    console.error("Error adding to Farcaster:", err);
+  if (inMiniApp && !added) {
+    showAddMiniAppPopup(); // Show the popup if in a mini-app and not added
   }
-}
+};
 
-// Enable notifications (using Farcaster SDK)
-async function enableFarcasterNotifications() {
-  try {
-    if (!window.sdk) {
-      console.error('Farcaster SDK is not loaded.');
-      return;
-    }
-
-    // Check if Farcaster SDK has the method to enable notifications
-    if (window.sdk.notifications && window.sdk.notifications.enable) {
-      const result = await window.sdk.notifications.enable(); // Farcaster SDK method
-      console.log("Notifications enabled:", result);
-    } else {
-      console.error("Farcaster SDK or method is not available");
-    }
-  } catch (err) {
-    console.error("Error enabling notifications:", err);
-  }
-}
-
-// Show the popup when the game starts
-window.onload = showAddMiniAppPopup;  // Ensure popup shows as soon as the page loads
 
 
 
