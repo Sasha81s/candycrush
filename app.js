@@ -563,6 +563,7 @@ async function preload(srcs) {
 
 
 
+
 // Function to show the popup at the start of the game
 function showAddMiniAppPopup() {
   const popup = document.getElementById('add-mini-app-popup');
