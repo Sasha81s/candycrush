@@ -582,7 +582,6 @@ async function preload(srcs) {
 
 // Ensure the Farcaster SDK is available
 const LS_KEY = 'candycrush:addMiniAppPrompt:added';
-
 let open = false;
 let busy = false;
 
@@ -598,20 +597,10 @@ function hideAddMiniAppPopup() {
   popup.style.display = 'none';
 }
 
-// Check if the game has already been added and show the popup if needed
-async function checkIfGameAdded() {
-  try {
-    const inMini = window.sdk && (await window.sdk.isInMiniApp()) === true;
-    const added = localStorage.getItem(LS_KEY) === 'yes';
-
-    // Show popup if in a mini-app and game hasn't been added yet
-    if (inMini && !added) {
-      open = true;
-      showAddMiniAppPopup();
-    }
-  } catch (error) {
-    console.error('Error checking Farcaster:', error);
-  }
+// Check if the game has already been added
+function checkIfGameAdded() {
+  const added = localStorage.getItem(LS_KEY) === 'yes';
+  return added;
 }
 
 // Handle Confirm Button Click (user confirms adding the game)
@@ -642,18 +631,17 @@ document.getElementById('cancel-btn').addEventListener('click', () => {
   hideAddMiniAppPopup();
 });
 
-// Show the popup when the game starts (or on page load)
+// Check and Show Popup based on `localStorage` flag
 window.onload = () => {
-  let ignore = false;
+  // Check if game has been added (if the flag is set in localStorage)
+  const added = checkIfGameAdded();
 
-  // Initialize check on load
-  checkIfGameAdded();
-
-  // Cleanup
-  return () => {
-    ignore = true;
-  };
+  // If not added yet, show the popup
+  if (!added) {
+    showAddMiniAppPopup();
+  }
 };
+
 
 
 
