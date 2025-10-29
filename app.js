@@ -563,45 +563,64 @@ async function preload(srcs) {
 
 
 
-// Show overlay at game start
-function showFavoritePrompt() {
-  // Check if Farcaster SDK is available
-  if (!window.sdk || !window.sdk.actions) {
-    console.error("Farcaster SDK is not available.");
-    alert("Farcaster SDK is not available. Please make sure you have it installed to add the game to favorites.");
-    return;
-  }
-
-  const overlay = document.createElement('div');
-  overlay.classList.add('favorite-overlay');
-  overlay.innerHTML = `
-    <div class="overlay-content">
-      <p>💜 Add "Candy Crush" to your favorites!</p>
-      <button id="add-to-favorites">Add to Favorites</button>
-    </div>
-  `;
-  
-  document.body.appendChild(overlay);
-  
-  // Close overlay when button is clicked
-  document.getElementById('add-to-favorites').addEventListener('click', () => {
-    // Trigger Farcaster Mini notification API
-    window.sdk.actions.favoriteApp('candy-crush')
-      .then(() => {
-        console.log('Game added to favorites!');
-        overlay.style.display = 'none'; // Close the overlay after successful action
-      })
-      .catch(err => {
-        console.error("Failed to add to favorites:", err);
-        alert("Failed to add to favorites. Please try again later.");
-      });
-  });
+// Function to show the popup at the start of the game
+function showAddMiniAppPopup() {
+  const popup = document.getElementById('add-mini-app-popup');
+  popup.style.visibility = 'visible';
 }
 
-// Call the function when the game starts
-document.addEventListener("DOMContentLoaded", () => {
-  showFavoritePrompt();
+// Hide the popup
+function hideAddMiniAppPopup() {
+  const popup = document.getElementById('add-mini-app-popup');
+  popup.style.visibility = 'hidden';
+}
+
+// Add event listener for the Cancel button
+document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
+
+// Confirm button logic: when clicked, both actions will be triggered without checkboxes
+document.getElementById('confirm-btn').addEventListener('click', async () => {
+  console.log("Adding to Farcaster...");
+  await addToFarcasterMiniApp(); // Add the mini-app
+
+  console.log("Enabling notifications...");
+  await enableFarcasterNotifications(); // Enable notifications
+
+  hideAddMiniAppPopup(); // Hide popup after confirm
 });
+
+// Add to Farcaster mini-app (using Farcaster SDK)
+async function addToFarcasterMiniApp() {
+  try {
+    // Assuming window.sdk has a method to add the app
+    if (window.sdk && window.sdk.miniapp && window.sdk.miniapp.add) {
+      const result = await window.sdk.miniapp.add(); // Example method, check Farcaster docs
+      console.log("Mini App added to Farcaster:", result);
+    } else {
+      console.error("Farcaster SDK or method is not available");
+    }
+  } catch (err) {
+    console.error("Error adding to Farcaster:", err);
+  }
+}
+
+// Enable notifications (using Farcaster SDK)
+async function enableFarcasterNotifications() {
+  try {
+    // Assuming window.sdk has a method to enable notifications
+    if (window.sdk && window.sdk.notifications && window.sdk.notifications.enable) {
+      const result = await window.sdk.notifications.enable(); // Example method, check Farcaster docs
+      console.log("Notifications enabled:", result);
+    } else {
+      console.error("Farcaster SDK or method is not available");
+    }
+  } catch (err) {
+    console.error("Error enabling notifications:", err);
+  }
+}
+
+// Show the popup when the game starts
+window.onload = showAddMiniAppPopup;  // Ensure popup shows as soon as the page loads
 
 
 
