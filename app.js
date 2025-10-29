@@ -771,50 +771,62 @@ function showEndGamePopup(score) {
   playAgainButton.disabled = false;  // Ensure the button is clickable
   playAgainButton.innerHTML = "Play Again"; // Reset the button text
 
-  // Reset event listener to prevent stacking event listeners
-  playAgainButton.removeEventListener('click', playAgainListener); 
-  playAgainButton.addEventListener('click', playAgainListener);  
 
-  function playAgainListener() {
-    // Prevent further actions if transaction is already pending
-    if (isTransactionPending) return;
 
-    // Mark the transaction as pending
-    isTransactionPending = true;
 
-    // Disable the button to prevent multiple clicks
-    playAgainButton.disabled = true;
-    playAgainButton.innerHTML = "Processing..."; // Show processing text
+// Modify this part to use the handlePlayAgain method directly
+playAgainButton.addEventListener('click', async () => {
+  playAgainButton.disabled = true;
+  playAgainButton.innerHTML = "Processing..."; // Show processing state
 
-    // Trigger transaction
-    sendMandatoryTx()
-      .then(txHash => {
-        // Wait for the transaction to be confirmed
-        return waitForTransactionConfirmation(txHash);
-      })
-      .then(receipt => {
-        if (receipt.status === '0x1') {
-          console.log('Transaction confirmed. Restarting the game.');
-          startGame(); // Restart game after successful transaction
-          
-          // Hide the popup after the game starts
-          popup.style.display = 'none'; // Hide the popup after confirmation
-        } else {
-          throw new Error('Transaction failed');
-        }
-      })
-      .catch((err) => {
-        console.error('Transaction failed:', err);
-        alert('Transaction failed. Please try again.');
-      })
-      .finally(() => {
-        // Regardless of the transaction result, enable the button again
-        isTransactionPending = false;
-        playAgainButton.disabled = false;
-        playAgainButton.innerHTML = "Play Again";  // Reset text to default
-      });
+  try {
+    // Start the transaction process for PLAY AGAIN
+    await handlePlayAgain();
+    startGame(); // Restart the game after the transaction is confirmed
+
+    // Hide the popup after confirming the game restart
+    const popup = document.getElementById('end-game-popup');
+    popup.style.display = 'none'; // Hide the game over popup
+  } catch (err) {
+    console.error("Error in PLAY AGAIN flow:", err);
+    alert('Transaction failed. Please try again.');
+  } finally {
+    playAgainButton.disabled = false;
+    playAgainButton.innerHTML = "Play Again"; // Reset button text
+  }
+});
+}
+
+
+// Function to handle PLAY AGAIN action
+async function handlePlayAgain() {
+  const addr = await ensureConnected();  // Ensure the wallet is connected
+  const provider = await getProvider();  // Get the provider for transaction
+
+  // Ensure Base chain is selected
+  await ensureBaseChain(provider);
+
+  const tx = {
+    from: addr,
+    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Target address
+    value: '0x9184e72a000',  // 0.00001 ETH in wei
+  };
+
+  try {
+    // Send the transaction
+    const hash = await provider.request({
+      method: 'eth_sendTransaction',
+      params: [tx],
+    });
+    console.log("Transaction hash:", hash);
+    return hash;
+  } catch (err) {
+    console.error("Transaction failed:", err);
+    throw new Error("Transaction failed");
   }
 }
+
+
 
 // Wait for the transaction to be confirmed
 async function waitForTransactionConfirmation(txHash) {
