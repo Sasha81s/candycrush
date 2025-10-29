@@ -10,6 +10,8 @@ const modals = {
 function showScreen(name) {
   const home = document.getElementById('screen-home');
   const game = document.getElementById('screen-game');
+  const popup = document.getElementById('end-game-popup'); // The game over popup
+
 
   /* ===== remote leaderboard config ===== */
 const API_BASE = ""; // same origin
@@ -51,6 +53,11 @@ async function fetchTop(n = 10) {
   home?.classList.remove('active');
   game?.classList.remove('active');
 
+    // Hide the game-over popup when switching to home screen
+  if (name === 'home' && popup) {
+    popup.style.display = 'none';  // Hide the game-over popup
+  }
+
   // show requested
   (name === 'game' ? game : home)?.classList.add('active');
 
@@ -66,6 +73,10 @@ document.getElementById('btn-leader').addEventListener('click', async () => {
   modals.leader?.removeAttribute('hidden');
   modals.leader?.classList.add('show');
   if (btn) btn.disabled = false;
+    // Hide the end-game popup when you exit to the home screen
+  const popup = document.getElementById('end-game-popup');
+  if (popup) popup.style.display = 'none';
+  showScreen('home');
 });
 
 document.getElementById('btn-close-leader').addEventListener('click', () => {
