@@ -27,63 +27,6 @@ async function signScore(score) {
   return { addr, ts, sig };
 }
 
-
-
-
-
-
-
-
-
-
-
-
-// Show overlay at game start
-function showFavoritePrompt() {
-  const overlay = document.createElement('div');
-  overlay.classList.add('favorite-overlay');
-  overlay.innerHTML = `
-    <div class="overlay-content">
-      <p>💜 Add "Candy Crush" to your favorites!</p>
-      <button id="add-to-favorites">Add to Favorites</button>
-    </div>
-  `;
-  
-  document.body.appendChild(overlay);
-  
-  // Close overlay when button is clicked
-  document.getElementById('add-to-favorites').addEventListener('click', () => {
-    // Trigger Farcaster Mini notification API
-    if (window.sdk && window.sdk.actions) {
-      window.sdk.actions.favoriteApp('candy-crush').catch(console.error);
-    }
-
-    // Close the overlay after adding to favorites
-    overlay.style.display = 'none';
-  });
-}
-
-// Call the function when the game starts
-useEffect(() => {
-  showFavoritePrompt();
-}, []);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* ===== remote submit + fetch ===== */
 async function submitScoreRemote(name, score) {
   const { addr, ts, sig } = await signScore(score);
@@ -607,6 +550,86 @@ async function preload(srcs) {
     );
   } catch {}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Function to show the popup at the start of the game
+function showAddMiniAppPopup() {
+  const popup = document.getElementById('add-mini-app-popup');
+  popup.style.visibility = 'visible';
+}
+
+// Hide the popup
+function hideAddMiniAppPopup() {
+  const popup = document.getElementById('add-mini-app-popup');
+  popup.style.visibility = 'hidden';
+}
+
+// Add event listeners for the buttons
+document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
+document.getElementById('confirm-btn').addEventListener('click', () => {
+  const addToFarcaster = document.getElementById('add-to-farcaster').checked;
+  const enableNotifications = document.getElementById('enable-notifications').checked;
+
+  if (addToFarcaster) {
+    console.log("Adding to Farcaster...");
+    addToFarcasterMiniApp();
+  }
+
+  if (enableNotifications) {
+    console.log("Enabling notifications...");
+    enableFarcasterNotifications();
+  }
+
+  hideAddMiniAppPopup(); // Hide popup after confirm
+});
+
+// Add to Farcaster mini-app (using Farcaster SDK)
+async function addToFarcasterMiniApp() {
+  try {
+    // Assuming window.sdk has a method to add the app
+    const result = await window.sdk.miniapp.add(); // Example method, check Farcaster docs
+    console.log("Mini App added to Farcaster:", result);
+  } catch (err) {
+    console.error("Error adding to Farcaster:", err);
+  }
+}
+
+// Enable notifications (using Farcaster SDK)
+async function enableFarcasterNotifications() {
+  try {
+    // Assuming window.sdk has a method to enable notifications
+    const result = await window.sdk.notifications.enable(); // Example method, check Farcaster docs
+    console.log("Notifications enabled:", result);
+  } catch (err) {
+    console.error("Error enabling notifications:", err);
+  }
+}
+
+// Show the popup when the game starts
+window.onload = showAddMiniAppPopup;
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ======================= game flow ======================= */
 function startGame() {
