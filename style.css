@@ -53,13 +53,15 @@ html, body{
   top:50%; left:50%;
   transform:translate(-50%, -50%);
   text-align:center;
+  width: 100%;  /* Ensure it takes up the full width */
+  padding: 0 20px;
 }
 
 #game-logo {
   width: 200px;
   height: 200px;
   object-fit: contain;
-  margin-bottom: 50px;
+  margin-bottom: 10px; /* Reduced space between logo and title */
   filter: drop-shadow(0 0 10px rgba(255,255,255,.4));
 }
 
@@ -67,12 +69,17 @@ html, body{
   font-size: 40px;
   font-weight: 800;
   color: #ff66cc;
-  text-shadow: 0 0 12px rgba(255,102,204,.7);
-  margin-bottom: 40px;
+  text-shadow: 0 0 12px rgba(255,102,204,0.7);
+  margin-bottom: 20px; /* Adjusted space between title and Play button */
   letter-spacing: 1px;
 }
 
-/* buttons */
+/* Play button positioning */
+#btn-play {
+  margin-top: 10px; /* Moves play button closer to title */
+}
+
+/* Buttons */
 .btn{
   appearance:none;
   border:0;
@@ -93,6 +100,7 @@ html, body{
 .btn.connect[disabled]{ background:#27ae60; opacity:.85; }
 
 .btn.small{ padding:8px 12px; border-radius:10px; }
+
 
 .addr-pill{
   margin:10px auto 0; max-width:260px; text-align:center;
