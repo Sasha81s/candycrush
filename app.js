@@ -73,10 +73,6 @@ document.getElementById('btn-leader').addEventListener('click', async () => {
   modals.leader?.removeAttribute('hidden');
   modals.leader?.classList.add('show');
   if (btn) btn.disabled = false;
-    // Hide the end-game popup when you exit to the home screen
-  const popup = document.getElementById('end-game-popup');
-  if (popup) popup.style.display = 'none';
-  showScreen('home');
 });
 
 document.getElementById('btn-close-leader').addEventListener('click', () => {
