@@ -870,12 +870,6 @@ function showCustomModal(message) {
 /* boot to home */
 showScreen('home');
 
-// ask player name once
-if (!localStorage.getItem('cc_name')) {
-  const n = prompt('enter your name for the leaderboard') || 'guest';
-  localStorage.setItem('cc_name', n.slice(0, 16));
-}
-
 // safety
 setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);
 
