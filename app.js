@@ -619,6 +619,7 @@ async function enableFarcasterNotifications() {
   }
 }
 
+
 // Show the popup when the game starts
 window.onload = showAddMiniAppPopup;  // Ensure popup shows as soon as the page loads
 
