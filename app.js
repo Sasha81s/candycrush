@@ -328,39 +328,50 @@ function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } 
 
 
 
-// Function to show the popup at the start of the game
-function showAddMiniAppPopup() {
-  const popup = document.getElementById('add-mini-app-popup');
-  popup.style.visibility = 'visible';
+
+
+// Show overlay at game start
+function showFavoritePrompt() {
+  const overlay = document.createElement('div');
+  overlay.classList.add('favorite-overlay');
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      <p>💜 Add "HYPER RUN" to your favorites!</p>
+      <button id="add-to-favorites">Add to Favorites</button>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  
+  // Close overlay when button is clicked
+  document.getElementById('add-to-favorites').addEventListener('click', () => {
+    // Trigger Farcaster Mini notification API
+    if (window.sdk && window.sdk.actions) {
+      window.sdk.actions.favoriteApp('hyper-run').catch(console.error);
+    }
+
+    // Close the overlay after adding to favorites
+    overlay.style.display = 'none';
+  });
 }
 
-// Hide the popup
-function hideAddMiniAppPopup() {
-  const popup = document.getElementById('add-mini-app-popup');
-  popup.style.visibility = 'hidden';
-}
+// Call the function when the game starts
+useEffect(() => {
+  showFavoritePrompt();
+}, []);
 
-// Add event listeners for the buttons
-document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
-document.getElementById('confirm-btn').addEventListener('click', () => {
-  const addToFarcaster = document.getElementById('add-to-farcaster').checked;
-  const enableNotifications = document.getElementById('enable-notifications').checked;
 
-  if (addToFarcaster) {
-    console.log("Adding to Farcaster...");
-    // Add Farcaster logic here
-  }
 
-  if (enableNotifications) {
-    console.log("Enabling notifications...");
-    // Enable notifications logic here
-  }
 
-  hideAddMiniAppPopup(); // Hide popup after confirm
-});
 
-// Show the popup when the game starts
-window.onload = showAddMiniAppPopup;
+
+
+
+
+
+
+
+
 
 
 
