@@ -882,46 +882,26 @@ setTimeout(() => { try { window.sdk?.actions?.ready() } catch {} }, 0);
 
 
 
-
-
-
-
-
-
-
 // Create a global variable for the audio
-let backgroundMusic = new Audio('music/background-music.mp3');
+let backgroundMusic = new Audio('music/background-music.mp3');  // Ensure the path to the music file is correct
 backgroundMusic.loop = true; // Loop the music
-backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
+backgroundMusic.volume = 0.2; // Set initial volume (0.0 to 1.0)
 
-// Play the background music when the page loads (auto-play)
+// Initially mute the music for autoplay to work
+backgroundMusic.muted = true;
+
+// Attempt to play the music immediately when the page loads
 window.onload = () => {
-  // Try to start the music automatically when the page loads
   backgroundMusic.play().catch((error) => {
-    // If autoplay fails (browser restriction), set music to muted
-    console.log("Autoplay failed, muting the audio and awaiting user interaction...");
+    console.log("Autoplay failed due to browser restrictions. Music will play after user interaction.");
+    // Mute the music until the user interacts with the page
     backgroundMusic.muted = true;
-    // Show a "Unmute" button or wait for any user interaction to unmute the music
-    document.getElementById('mute-btn').style.display = 'block'; // Display mute button if autoplay failed
+  });
+  
+  // After the page loads, wait for the first user interaction to unmute the music
+  document.body.addEventListener('click', () => {
+    backgroundMusic.muted = false; // Unmute the music on first click
+    backgroundMusic.play(); // Play the music if not already playing
+    console.log("Music is now playing.");
   });
 };
-
-// Mute the music
-let isMuted = false;
-
-document.getElementById('mute-btn').addEventListener('click', () => {
-  isMuted = !isMuted;
-  if (isMuted) {
-    backgroundMusic.pause(); // Pause the music if muted
-    document.getElementById('mute-btn').textContent = 'Unmute Music'; // Change button text
-  } else {
-    backgroundMusic.play(); // Play the music if unmuted
-    document.getElementById('mute-btn').textContent = 'Mute Music'; // Change button text
-  }
-});
-
-// Ensure music is stopped when game ends
-function endGame() {
-  // Your existing end game logic...
-  backgroundMusic.pause(); // Stop the music when the game ends
-}
