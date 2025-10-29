@@ -621,6 +621,42 @@ window.onload = () => {
 
 
 
+// Create a global variable for the audio
+let backgroundMusic = new Audio('img/candy_crush_loop1.mp3');
+backgroundMusic.loop = true; // Loop the music
+backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
+
+// Play the background music when the game starts
+function startGame() {
+  // Your existing start game logic...
+  if (backgroundMusic.paused) {
+    backgroundMusic.play(); // Play the music when the game starts
+  }
+}
+
+// Mute the music
+let isMuted = false;
+
+document.getElementById('mute-btn').addEventListener('click', () => {
+  isMuted = !isMuted;
+  if (isMuted) {
+    backgroundMusic.pause(); // Pause the music if muted
+    document.getElementById('mute-btn').textContent = 'Unmute Music'; // Change button text
+  } else {
+    backgroundMusic.play(); // Play the music if unmuted
+    document.getElementById('mute-btn').textContent = 'Mute Music'; // Change button text
+  }
+});
+
+// Ensure music is stopped when game ends
+function endGame() {
+  // Your existing end game logic...
+  backgroundMusic.pause(); // Stop the music when the game ends
+}
+
+
+
+
 
 
 
