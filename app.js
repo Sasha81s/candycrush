@@ -582,6 +582,8 @@ async function preload(srcs) {
 
 // Ensure the Farcaster SDK is available
 const LS_KEY = 'candycrush:addMiniAppPrompt:added';
+let open = false;
+let busy = false;
 
 // Function to show the popup
 function showAddMiniAppPopup() {
@@ -595,46 +597,62 @@ function hideAddMiniAppPopup() {
   popup.style.display = 'none';
 }
 
-document.getElementById('cancel-btn').addEventListener('click', hideAddMiniAppPopup);
+// Check the conditions when the page loads
+window.onload = () => {
+  let ignore = false;
 
-// Confirm button click: when the user confirms the action
+  // Check if the game is already added
+  async function checkIfGameAdded() {
+    try {
+      const inMini = window.sdk && (await window.sdk.isInMiniApp()) === true;
+      const added = localStorage.getItem(LS_KEY) === 'yes';
+      
+      if (!ignore && inMini && !added) {
+        open = true;
+        showAddMiniAppPopup();
+      }
+    } catch (error) {
+      console.error('Error checking Farcaster:', error);
+    }
+  }
+
+  // Initialize check on load
+  checkIfGameAdded();
+
+  // Cleanup
+  return () => {
+    ignore = true;
+  };
+};
+
+// Handle Confirm Button Click (user confirms adding the game)
 document.getElementById('confirm-btn').addEventListener('click', async () => {
-  console.log("Confirming add to Farcaster...");
   try {
-    // Make sure the Farcaster SDK is loaded
-    if (!window.sdk) {
-      console.error("Farcaster SDK is not available.");
-      return;
-    }
+    busy = true;
+    document.getElementById('confirm-btn').textContent = 'Working…'; // Show working state
+    await window.sdk.actions.addMiniApp(); // Ask to add to Farcaster
 
-    // Step 1: Ask the user to add the game to Farcaster
-    const success = await window.sdk.actions.addMiniApp(); // Add to Farcaster
-    
-    // Step 2: If the action is successful, save the flag to localStorage
-    if (success) {
-      localStorage.setItem(LS_KEY, 'yes'); // Save the flag to prevent re-asking
-      console.log("Game successfully added to Farcaster.");
+    // Mark as added only after the user confirmed the add flow
+    localStorage.setItem(LS_KEY, 'yes');
+    console.log("Game successfully added to Farcaster.");
 
-      // Hide the popup after confirming
-      hideAddMiniAppPopup();
-    } else {
-      console.error("Error adding game to Farcaster.");
-    }
+    // Hide the popup after confirming
+    hideAddMiniAppPopup();
   } catch (error) {
-    console.error("Error confirming add to Farcaster:", error);
+    // If user dismissed or error occurred, don't set flag
+    console.error("Error adding mini app to Farcaster:", error);
+  } finally {
+    busy = false;
+    document.getElementById('confirm-btn').textContent = busy ? 'Working…' : 'Confirm';
   }
 });
 
-// Show the popup when the game starts (or on page load)
-window.onload = () => {
-  const inMiniApp = window.sdk && window.sdk.isInMiniApp ? window.sdk.isInMiniApp() : false;
-  const added = localStorage.getItem(LS_KEY) === 'yes';
+// Handle Cancel Button Click (user cancels the action)
+document.getElementById('cancel-btn').addEventListener('click', () => {
+  // Just close for now, no flag, so it will appear next launch
+  hideAddMiniAppPopup();
+});
 
-  // Only show the popup if the game hasn't been added yet
-  if (inMiniApp && !added) {
-    showAddMiniAppPopup(); // Show the popup if in a mini-app and not added
-  }
-};
 
 
 
