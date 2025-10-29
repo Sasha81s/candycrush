@@ -326,11 +326,6 @@ function startTimer() {
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
 
-
-
-
-
-
 // board sizing
 function fitBoard() {
   const wrap = document.getElementById('game-root');
@@ -437,21 +432,61 @@ function clearMatches(set){
   renderAll();
   return cleared;
 }
-function applyGravity(){
-  for(let c=0;c<W;c++){
-    let write=W-1;
-    for(let r=W-1;r>=0;r--){
-      const i=id(r,c);
-      if(types[i]!==0){
-        const j=id(write,c);
-        if(i!==j){ types[j]=types[i]; types[i]=0; }
+
+
+
+
+
+
+
+function applyGravity() {
+  for (let c = 0; c < W; c++) {
+    let write = W - 1;
+    for (let r = W - 1; r >= 0; r--) {
+      const i = id(r, c);
+      if (types[i] !== 0) {
+        const j = id(write, c);
+        if (i !== j) {
+          // Apply merging animation here
+          const fromBlock = cells[i];
+          const toBlock = cells[j];
+
+          // Add merging animation class to blocks
+          fromBlock.classList.add('merging');
+          toBlock.classList.add('merging');
+
+          // After animation ends, remove the class
+          setTimeout(() => {
+            fromBlock.classList.remove('merging');
+            toBlock.classList.remove('merging');
+          }, 300); // Match the duration of the animation
+
+          // Swap block types
+          types[j] = types[i];
+          types[i] = 0;
+          renderCell(i);
+          renderCell(j);
+        }
         write--;
       }
     }
-    for(let r=write;r>=0;r--) types[id(r,c)] = randomType();
+    for (let r = write; r >= 0; r--) types[id(r, c)] = randomType();
   }
   renderAll();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 function cascadeResolve(pre){
   resolving = true;
   function step(matches){
@@ -551,21 +586,6 @@ async function preload(srcs) {
   } catch {}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Ensure the Farcaster SDK is available
 const LS_KEY = 'candycrush:addMiniAppPrompt:added';
 
@@ -612,27 +632,22 @@ window.onload = () => {
 };
 
 
-
-
-
-
-
-
-
-
-
 // Create a global variable for the audio
-let backgroundMusic = new Audio('img/candy_crush_loop1.mp3');
+let backgroundMusic = new Audio('music/background-music.mp3');
 backgroundMusic.loop = true; // Loop the music
 backgroundMusic.volume = 0.5; // Set initial volume (0.0 to 1.0)
 
-// Play the background music when the game starts
-function startGame() {
-  // Your existing start game logic...
-  if (backgroundMusic.paused) {
-    backgroundMusic.play(); // Play the music when the game starts
-  }
-}
+// Play the background music when the page loads (auto-play)
+window.onload = () => {
+  // Try to start the music automatically when the page loads
+  backgroundMusic.play().catch((error) => {
+    // If autoplay fails (browser restriction), set music to muted
+    console.log("Autoplay failed, muting the audio and awaiting user interaction...");
+    backgroundMusic.muted = true;
+    // Show a "Unmute" button or wait for any user interaction to unmute the music
+    document.getElementById('mute-btn').style.display = 'block'; // Display mute button if autoplay failed
+  });
+};
 
 // Mute the music
 let isMuted = false;
@@ -653,13 +668,6 @@ function endGame() {
   // Your existing end game logic...
   backgroundMusic.pause(); // Stop the music when the game ends
 }
-
-
-
-
-
-
-
 
 
 
@@ -754,21 +762,6 @@ async function endGame() {
   // Show end-game popup
   showEndGamePopup(scoreValue);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Track if the transaction is pending
@@ -884,26 +877,6 @@ async function sendMandatoryTx() {
     throw new Error("Transaction failed");
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Share button functionality (sync-safe)
 const shareBtn = document.getElementById('share-btn');
