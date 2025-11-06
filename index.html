@@ -57,44 +57,34 @@
 </div>
 
     <!-- scripts -->
-    <script type="module">
-      (async () => {
+<script type="module">
+  (async () => {
+    try {
+      // reliable import for Warpcast webview
+      const { sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk?bundle');
+      window.sdk = sdk;
+
+      // when ready, immediately trigger addMiniApp
+      const callReady = async () => {
         try {
-          // reliable import for Warpcast webview
-          const { sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk?bundle');
-          window.sdk = sdk;
-          const callReady = () => { try { sdk.actions.ready() } catch {} };
-          if (document.readyState === 'complete') {
-            requestAnimationFrame(callReady);
-          } else {
-            window.addEventListener('load', () => requestAnimationFrame(callReady), { once: true });
-          }
-        } catch (e) {
-          console.error('[mini] sdk import failed', e);
+          await sdk.actions.ready();
+          await sdk.actions.addMiniApp();
+        } catch (err) {
+          console.warn('[mini] addMiniApp skipped or failed', err);
         }
-      })();
-    </script>
+      };
+
+      if (document.readyState === 'complete') {
+        requestAnimationFrame(callReady);
+      } else {
+        window.addEventListener('load', () => requestAnimationFrame(callReady), { once: true });
+      }
+    } catch (e) {
+      console.error('[mini] sdk import failed', e);
+    }
+  })();
+</script>
     <script defer src="./app.js?v=3"></script>
-
-
-
-
-
-
-
-
-    <div id="add-mini-app-popup" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 9999; display: grid; place-items: center;">
-  <div style="background: #111218; padding: 20px; border-radius: 16px; color: white; width: 360px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);">
-    <h2>Add Mini App</h2>
-    <p>Would you like to add Candy Crush to Farcaster Mini Apps?</p>
-    <button id="cancel-btn">Cancel</button>
-    <button id="confirm-btn">Confirm</button>
-  </div>
-</div>
-
-
-
-
 
   </body>
 </html>
