@@ -194,7 +194,7 @@ async function sendMandatoryTx() {
 
   const tx = {
     from: addr,
-    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Your target address
+    to: '0x8ADb0aa83B0483895B448b138AE0f92Ac00f08d7', // Your target address
     value: '0x9184e72a000', // 0.00001 ETH in wei
   };
 
@@ -714,7 +714,7 @@ async function handlePlayAgain() {
 
   const tx = {
     from: addr,
-    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Target address
+    to: '0x8ADb0aa83B0483895B448b138AE0f92Ac00f08d7', // Target address
     value: '0x9184e72a000',  // 0.00001 ETH in wei
   };
 
@@ -770,7 +770,7 @@ async function sendMandatoryTx() {
 
   const tx = {
     from: addr,
-    to: '0xA13a9d5Cdc6324dA1Ca6A18Bc9B548904033858C', // Target address
+    to: '0x8ADb0aa83B0483895B448b138AE0f92Ac00f08d7', // Target address
     value: '0x9184e72a000', // 0.00001 ETH in wei
   };
 
@@ -792,7 +792,7 @@ const shareBtn = document.getElementById('share-btn');
 
 shareBtn.onclick = async () => {
   const shareText = `I just scored ${score} points in CrushLand Mini!`;
-  const shareUrl = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush'; // The URL you're sharing
+  const shareUrl = 'https://farcaster.xyz/miniapps/x4A9iyykb_4D/crushland'; // The URL you're sharing
 
   try {
     // Attempt to copy the content to clipboard first
