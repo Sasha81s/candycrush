@@ -645,7 +645,7 @@ async function endGame() {
   const body = { name, score: scoreValue, addr, fid };
 
   try {
-    const res = await fetch('https://candycrush-liard.vercel.app/api/score', {
+    const res = await fetch('https://crushland.vercel.app/api/score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -791,7 +791,7 @@ async function sendMandatoryTx() {
 const shareBtn = document.getElementById('share-btn');
 
 shareBtn.onclick = async () => {
-  const shareText = `I just scored ${score} points in Candy Crush Mini!`;
+  const shareText = `I just scored ${score} points in CrushLand Mini!`;
   const shareUrl = 'https://farcaster.xyz/miniapps/C6_Zeg_0a7CL/candycrush'; // The URL you're sharing
 
   try {

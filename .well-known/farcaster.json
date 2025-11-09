@@ -1,28 +1,28 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjE0MTYwOTEsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhCRGRmYjZhMTBENDdiOUU2OTk0NEE5Mzc3RjQyZDY1NzZBRDQ5YUE1In0",
-    "payload": "eyJkb21haW4iOiJjYW5keWNydXNoLWxpYXJkLnZlcmNlbC5hcHAifQ",
-    "signature": "Bc6gzjvCHbb41FQ+/OUwzh05Jy+SOQemqcEMXB6xHt19bOnmniBAffFzez1mdiRYIrpWqmlwx+73XLr1aNgsKBs="
+    "header": "eyJmaWQiOjE0MjQ2NjMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHhhYzk3ZTQ0YTM2QWJiZkM5M2M4QmNFM0Y5MjJmMUE4MjI4NjEyMkYzIn0",
+    "payload": "eyJkb21haW4iOiJjcnVzaGxhbmQudmVyY2VsLmFwcCJ9",
+    "signature": "Qqi8fCafj3K2CnMtKWWUJlwXeBZQq8E6UuSKwqnZYUkRgLhiV8vqmcwHRF0UYCiTrrSji3jaNfVdDSYZUdF5pxw="
   },
   "miniapp": {
     "version": "1",
-    "name": "CandyCrush",
+    "name": "CrushLand",
     "subtitle": "Match 3 Mini Game",
     "description": "Match 3 puzzle game inside Farcaster Mini App",
-    "homeUrl": "https://candycrush-liard.vercel.app",
-    "webhookUrl": "https://candycrush-liard.vercel.app/api/webhook",
+    "homeUrl": "https://crushland.vercel.app",
+    "webhookUrl": "https://crushland.vercel.app/api/webhook",
     "primaryCategory": "games",
     "tags": ["games", "puzzle", "base"],
-    "iconUrl": "https://candycrush-liard.vercel.app/icon.png",
-    "heroImageUrl": "https://candycrush-liard.vercel.app/og.png",
-    "splashImageUrl": "https://candycrush-liard.vercel.app/og.png",
+    "iconUrl": "https://crushland.vercel.app/icon.png",
+    "heroImageUrl": "https://crushland.vercel.app/og.png",
+    "splashImageUrl": "https://crushland.vercel.app/og.png",
     "splashBackgroundColor": "#000000",
-    "screenshotUrls": ["https://candycrush-liard.vercel.app/screenshot-portrait.png"],
-    "ogTitle": "CandyCrush",
-    "ogDescription": "Play CandyCrush on Base",
-    "ogImageUrl": "https://candycrush-liard.vercel.app/og.png"
+    "screenshotUrls": ["https://crushland.vercel.app/screenshot-portrait.png"],
+    "ogTitle": "CrushLand",
+    "ogDescription": "Play CrushLand on Farcaster",
+    "ogImageUrl": "https://crushland.vercel.app/og.png"
   },
   "baseBuilder": {
-    "ownerAddress": "0xD1953dc7195a205B562e3DDdF45293Fa646Bab01"
+    "ownerAddress": "0xF6a8bD20f3717F5F89718f59E5D3973715180854"
   }
 }
